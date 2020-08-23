@@ -187,6 +187,20 @@ namespace DeadlockedDatabase.Controllers
             return await getAccount(existingAccount.AccountId);
         }
 
+        [HttpPost, Route("postMachineId")]
+        public async Task<dynamic> postMachineId([FromBody] string MachineId, int AccountId)
+        {
+            Account existingAccount = db.Account.Where(a => a.AccountId == AccountId).FirstOrDefault();
+            if (existingAccount == null)
+                return NotFound();
+
+            existingAccount.MachineId = MachineId;
+            db.Account.Attach(existingAccount);
+            db.Entry(existingAccount).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            db.SaveChanges();
+            return Ok();
+        }
+
         [HttpPost, Route("postMediusStats")]
         public async Task<dynamic> postMediusStats([FromBody] string StatsString, int AccountId)
         {
