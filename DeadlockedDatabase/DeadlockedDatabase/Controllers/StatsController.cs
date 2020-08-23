@@ -79,7 +79,7 @@ namespace DeadlockedDatabase.Controllers
                                             on s.AccountId equals a.AccountId
                                           select new LeaderboardDTO()
                                           {
-                                              TotalRankedAccounts = ac.getActiveAccountCountByAppId((int)a.AppId).Result,
+                                              TotalRankedAccounts = 0,
                                               StartIndex = StartIndex,
                                               Index = StartIndex + stats.IndexOf(s),
                                               AccountId = s.AccountId,

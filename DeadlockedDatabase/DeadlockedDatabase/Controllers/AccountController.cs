@@ -255,5 +255,75 @@ namespace DeadlockedDatabase.Controllers
 
             return await getAccountStatus(StatusData.AccountId);
         }
+
+        //[HttpGet, Route("loadAccountsFromJson")]
+        //public async Task<dynamic> loadAccountsFromJson()
+        //{
+        //    string json = System.IO.File.ReadAllText("db.json");
+        //    AccountJSONModel jsonData = JsonConvert.DeserializeObject<AccountJSONModel>(json);
+        //    DateTime now = DateTime.UtcNow;
+        //    using (var transaction = db.Database.BeginTransaction())
+        //    {
+        //        foreach (JsonAccountDTO account in jsonData.Accounts)
+        //        {
+        //            Account newAcc = new Account()
+        //            {
+        //                AccountId = account.AccountId,
+        //                AccountName = account.AccountName,
+        //                AccountPassword = ComputeSHA256(account.AccountPassword),
+        //                CreateDt = now,
+        //                IsActive = true,
+        //                MediusStats = account.Stats,
+        //                AppId = 11184,
+        //            };
+
+        //            db.Database.ExecuteSqlRaw("SET IDENTITY_INSERT [Ratchet_Deadlocked].[ACCOUNTS].[account] ON");
+        //            db.Account.Add(newAcc);
+        //        }
+        //        db.SaveChanges();
+        //        transaction.Commit();
+        //    }
+        //    return Ok();
+        //}
+
+        //public static string ComputeSHA256(string input)
+        //{
+        //    // Create a SHA256   
+        //    using (SHA256 sha256Hash = SHA256.Create())
+        //    {
+        //        // ComputeHash - returns byte array  
+        //        byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
+
+        //        // Convert byte array to a string   
+        //        StringBuilder builder = new StringBuilder();
+        //        for (int i = 0; i < bytes.Length; i++)
+        //            builder.Append(bytes[i].ToString("x2"));
+
+        //        return builder.ToString();
+        //    }
+        //}
+
+        //[HttpGet, Route("loadBuddiesAndStatsJson")]
+        //public async Task<dynamic> loadBuddiesAndStatsJson()
+        //{
+        //    string json = System.IO.File.ReadAllText("db.json");
+        //    AccountJSONModel jsonData = JsonConvert.DeserializeObject<AccountJSONModel>(json);
+        //    DateTime now = DateTime.UtcNow;
+
+        //    StatsController sc = new StatsController(db);
+        //    foreach (JsonAccountDTO account in jsonData.Accounts)
+        //    {
+
+        //        await sc.initStats(account.AccountId);
+        //        await sc.postStats(new StatPostDTO()
+        //        {
+        //            AccountId = account.AccountId,
+        //            stats = account.AccountWideStats
+        //        });
+
+        //    }
+        //    db.SaveChanges();
+        //    return Ok();
+        //}
     }
 }
