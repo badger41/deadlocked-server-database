@@ -99,7 +99,10 @@ namespace DeadlockedDatabase.Controllers
 
             foreach(AccountStat pStat in playerStats)
             {
+                
                 int newValue = statData.stats[pStat.StatId - 1];
+                if (newValue < 0)
+                    return BadRequest("Found a negative stat in array. Can't have those!");
                 pStat.ModifiedDt = modifiedDt;
                 pStat.StatValue = newValue;
 
