@@ -94,7 +94,7 @@ namespace DeadlockedDatabase.Controllers
                     Account acc = new Account()
                     {
                         AccountName = request.AccountName,
-                        AccountPassword = request.AccountPassword,
+                        AccountPassword = request.PasswordPreHashed ? request.AccountPassword : Crypto.ComputeSHA256(request.AccountPassword),
                         CreateDt = now,
                         LastSignInDt = now,
                         MachineId = request.MachineId,
@@ -270,6 +270,29 @@ namespace DeadlockedDatabase.Controllers
             return await getAccountStatus(StatusData.AccountId);
         }
 
+        [HttpPost, Route("changeAccountPassword")]
+        public async Task<dynamic> changeAccountPassword([FromBody] AccountPasswordRequest PasswordRequest)
+        {
+            Account existingAccount = db.Account.Where(acs => acs.AccountId == PasswordRequest.AccountId).FirstOrDefault();
+            if (existingAccount == null)
+                return NotFound();
+
+            if (Crypto.ComputeSHA256(PasswordRequest.OldPassword) != existingAccount.AccountPassword)
+                return StatusCode(401, "The password you provided is incorrect.");
+
+            if (PasswordRequest.NewPassword != PasswordRequest.ConfirmNewPassword)
+                return StatusCode(400, "The new and confirmation passwords do not match each other. Please try again.");
+
+            existingAccount.AccountPassword = Crypto.ComputeSHA256(PasswordRequest.NewPassword);
+            existingAccount.ModifiedDt = DateTime.UtcNow;
+
+            db.Account.Attach(existingAccount);
+            db.Entry(existingAccount).State = EntityState.Modified;
+            db.SaveChanges();
+
+            return Ok("Password Updated");
+
+        }
         //[HttpGet, Route("loadAccountsFromJson")]
         //public async Task<dynamic> loadAccountsFromJson()
         //{

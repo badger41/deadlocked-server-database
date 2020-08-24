@@ -25,6 +25,7 @@ namespace DeadlockedDatabase.DTO
         public string MachineId { get; set; }
         public string MediusStats { get; set; }
         public int AppId { get; set; }
+        public bool PasswordPreHashed { get; set; } = true;
     }
 
     public class AccountRelationDTO
@@ -56,5 +57,13 @@ namespace DeadlockedDatabase.DTO
         public List<int> Ignored { get; set; }
         public List<int> AccountWideStats { get; set; }
         public string Stats { get; set; }
+    }
+
+    public class AccountPasswordRequest
+    {
+        public int AccountId { get; set; }
+        public string OldPassword { get; set; }
+        public string NewPassword { get; set; }
+        public string ConfirmNewPassword { get; set; }
     }
 }
