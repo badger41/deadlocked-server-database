@@ -24,7 +24,7 @@ namespace DeadlockedDatabase.Models
         public virtual DbSet<DimAnnouncements> DimAnnouncements { get; set; }
         public virtual DbSet<DimEula> DimEula { get; set; }
         public virtual DbSet<DimStats> DimStats { get; set; }
-
+        public virtual DbSet<ServerLog> ServerLog { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -239,6 +239,36 @@ namespace DeadlockedDatabase.Models
                     .IsRequired()
                     .HasColumnName("stat_name")
                     .HasMaxLength(100);
+            });
+
+            modelBuilder.Entity<ServerLog>(entity =>
+            {
+                entity.ToTable("server_log", "LOGS");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.AccountId).HasColumnName("account_id");
+
+                entity.Property(e => e.LogDt)
+                    .HasColumnName("log_dt")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.LogMsg)
+                    .IsRequired()
+                    .HasColumnName("log_msg");
+
+                entity.Property(e => e.LogStacktrace).HasColumnName("log_stacktrace");
+
+                entity.Property(e => e.LogTitle)
+                    .IsRequired()
+                    .HasColumnName("log_title")
+                    .HasMaxLength(200);
+
+                entity.Property(e => e.MethodName)
+                    .HasColumnName("method_name")
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Payload).HasColumnName("payload");
             });
 
             OnModelCreatingPartial(modelBuilder);
