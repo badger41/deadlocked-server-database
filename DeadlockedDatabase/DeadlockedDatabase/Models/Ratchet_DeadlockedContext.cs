@@ -21,7 +21,10 @@ namespace DeadlockedDatabase.Models
         public virtual DbSet<AccountStat> AccountStat { get; set; }
         public virtual DbSet<AccountStatus> AccountStatus { get; set; }
         public virtual DbSet<Banned> Banned { get; set; }
+        public virtual DbSet<DimAnnouncements> DimAnnouncements { get; set; }
+        public virtual DbSet<DimEula> DimEula { get; set; }
         public virtual DbSet<DimStats> DimStats { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -162,6 +165,62 @@ namespace DeadlockedDatabase.Models
                 entity.Property(e => e.FromDt)
                     .HasColumnName("from_dt")
                     .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.ToDt).HasColumnName("to_dt");
+            });
+
+            modelBuilder.Entity<DimAnnouncements>(entity =>
+            {
+                entity.ToTable("dim_announcements", "KEYS");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.AnnouncementBody)
+                    .IsRequired()
+                    .HasColumnName("announcement_body");
+
+                entity.Property(e => e.AnnouncementTitle)
+                    .IsRequired()
+                    .HasColumnName("announcement_title")
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.CreateDt)
+                    .HasColumnName("create_dt")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.FromDt)
+                    .HasColumnName("from_dt")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.ModifiedDt).HasColumnName("modified_dt");
+
+                entity.Property(e => e.ToDt).HasColumnName("to_dt");
+            });
+
+            modelBuilder.Entity<DimEula>(entity =>
+            {
+                entity.ToTable("dim_eula", "KEYS");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.CreateDt)
+                    .HasColumnName("create_dt")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.EulaBody)
+                    .IsRequired()
+                    .HasColumnName("eula_body");
+
+                entity.Property(e => e.EulaTitle)
+                    .IsRequired()
+                    .HasColumnName("eula_title")
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.FromDt)
+                    .HasColumnName("from_dt")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.ModifiedDt).HasColumnName("modified_dt");
 
                 entity.Property(e => e.ToDt).HasColumnName("to_dt");
             });
