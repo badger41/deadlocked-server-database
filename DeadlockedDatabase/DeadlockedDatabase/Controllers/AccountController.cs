@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DeadlockedDatabase.DTO;
-using DeadlockedDatabase.Models;
+using DeadlockedDatabase.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using DeadlockedDatabase.Models;
+using DeadlockedDatabase.Services;
 
 namespace DeadlockedDatabase.Controllers
 {
@@ -18,11 +20,25 @@ namespace DeadlockedDatabase.Controllers
     public class AccountController : ControllerBase
     {
         private Ratchet_DeadlockedContext db;
-        public AccountController(Ratchet_DeadlockedContext _db)
+        private IAuthService authService;
+        public AccountController(Ratchet_DeadlockedContext _db, IAuthService _authService)
         {
             db = _db;
+            authService = _authService;
         }
 
+        [HttpPost("authenticate")]
+        public IActionResult Authenticate(AuthenticationRequest model)
+        {
+            var response = authService.Authenticate(model);
+
+            if (response == null)
+                return BadRequest(new { message = "Username or password is incorrect" });
+
+            return Ok(response);
+        }
+
+        [Authorize]
         [HttpGet, Route("getAccountExists")]
         public async Task<bool> getAccountExists(string AccountName)
         {
@@ -32,6 +48,8 @@ namespace DeadlockedDatabase.Controllers
                            select a).FirstOrDefault();
             return acc != null;
         }
+
+        [Authorize]
         [HttpGet, Route("getActiveAccountCountByAppId")]
         public async Task<int> getActiveAccountCountByAppId(int AppId)
         {
@@ -42,7 +60,7 @@ namespace DeadlockedDatabase.Controllers
             return accountCount;
         }
 
-
+        [Authorize]
         [HttpGet, Route("getAccount")]
         public async Task<AccountDTO> getAccount(int AccountId)
         {
@@ -82,6 +100,7 @@ namespace DeadlockedDatabase.Controllers
             return account;
         }
 
+        [Authorize("database")]
         [HttpPost, Route("createAccount")]
         public async Task<dynamic> createAccount([FromBody] AccountRequestDTO request)
         {
@@ -147,6 +166,7 @@ namespace DeadlockedDatabase.Controllers
             }
         }
 
+        [Authorize("database")]
         [HttpGet, Route("deleteAccount")]
         public async Task<dynamic> deleteAccount(string AccountName)
         {
@@ -177,6 +197,7 @@ namespace DeadlockedDatabase.Controllers
             return Ok("Account Deleted");
         }
 
+        [Authorize]
         [HttpGet, Route("searchAccountByName")]
         public async Task<dynamic> searchAccountByName(string AccountName)
         {
@@ -187,6 +208,7 @@ namespace DeadlockedDatabase.Controllers
             return await getAccount(existingAccount.AccountId);
         }
 
+        [Authorize("database")]
         [HttpPost, Route("postMachineId")]
         public async Task<dynamic> postMachineId([FromBody] string MachineId, int AccountId)
         {
@@ -201,6 +223,7 @@ namespace DeadlockedDatabase.Controllers
             return Ok();
         }
 
+        [Authorize("database")]
         [HttpPost, Route("postMediusStats")]
         public async Task<dynamic> postMediusStats([FromBody] string StatsString, int AccountId)
         {
@@ -214,7 +237,7 @@ namespace DeadlockedDatabase.Controllers
             db.SaveChanges();
             return Ok();
         }
-
+        [Authorize("database")]
         [HttpPost, Route("postAccountSignInDate")]
         public async Task<dynamic> postAccountSignInDate([FromBody] DateTime SignInDt, int AccountId)
         {
@@ -230,7 +253,7 @@ namespace DeadlockedDatabase.Controllers
 
             return Ok();
         }
-
+        [Authorize]
         [HttpGet, Route("getAccountStatus")]
         public async Task<dynamic> getAccountStatus(int AccountId)
         {
@@ -241,6 +264,7 @@ namespace DeadlockedDatabase.Controllers
             return existingData;
         }
 
+        [Authorize("database")]
         [HttpPost, Route("postAccountStatusUpdates")]
         public async Task<dynamic> postAccountStatusUpdates([FromBody] AccountStatusDTO StatusData)
         {
@@ -270,6 +294,7 @@ namespace DeadlockedDatabase.Controllers
             return await getAccountStatus(StatusData.AccountId);
         }
 
+        [Authorize]
         [HttpPost, Route("changeAccountPassword")]
         public async Task<dynamic> changeAccountPassword([FromBody] AccountPasswordRequest PasswordRequest)
         {
@@ -293,74 +318,5 @@ namespace DeadlockedDatabase.Controllers
             return Ok("Password Updated");
 
         }
-        //[HttpGet, Route("loadAccountsFromJson")]
-        //public async Task<dynamic> loadAccountsFromJson()
-        //{
-        //    string json = System.IO.File.ReadAllText("db.json");
-        //    AccountJSONModel jsonData = JsonConvert.DeserializeObject<AccountJSONModel>(json);
-        //    DateTime now = DateTime.UtcNow;
-        //    using (var transaction = db.Database.BeginTransaction())
-        //    {
-        //        foreach (JsonAccountDTO account in jsonData.Accounts)
-        //        {
-        //            Account newAcc = new Account()
-        //            {
-        //                AccountId = account.AccountId,
-        //                AccountName = account.AccountName,
-        //                AccountPassword = ComputeSHA256(account.AccountPassword),
-        //                CreateDt = now,
-        //                IsActive = true,
-        //                MediusStats = account.Stats,
-        //                AppId = 11184,
-        //            };
-
-        //            db.Database.ExecuteSqlRaw("SET IDENTITY_INSERT [Ratchet_Deadlocked].[ACCOUNTS].[account] ON");
-        //            db.Account.Add(newAcc);
-        //        }
-        //        db.SaveChanges();
-        //        transaction.Commit();
-        //    }
-        //    return Ok();
-        //}
-
-        //public static string ComputeSHA256(string input)
-        //{
-        //    // Create a SHA256   
-        //    using (SHA256 sha256Hash = SHA256.Create())
-        //    {
-        //        // ComputeHash - returns byte array  
-        //        byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
-
-        //        // Convert byte array to a string   
-        //        StringBuilder builder = new StringBuilder();
-        //        for (int i = 0; i < bytes.Length; i++)
-        //            builder.Append(bytes[i].ToString("x2"));
-
-        //        return builder.ToString();
-        //    }
-        //}
-
-        //[HttpGet, Route("loadBuddiesAndStatsJson")]
-        //public async Task<dynamic> loadBuddiesAndStatsJson()
-        //{
-        //    string json = System.IO.File.ReadAllText("db.json");
-        //    AccountJSONModel jsonData = JsonConvert.DeserializeObject<AccountJSONModel>(json);
-        //    DateTime now = DateTime.UtcNow;
-
-        //    StatsController sc = new StatsController(db);
-        //    foreach (JsonAccountDTO account in jsonData.Accounts)
-        //    {
-
-        //        await sc.initStats(account.AccountId);
-        //        await sc.postStats(new StatPostDTO()
-        //        {
-        //            AccountId = account.AccountId,
-        //            stats = account.AccountWideStats
-        //        });
-
-        //    }
-        //    db.SaveChanges();
-        //    return Ok();
-        //}
     }
 }

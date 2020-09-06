@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace DeadlockedDatabase.DTO
@@ -65,5 +66,13 @@ namespace DeadlockedDatabase.DTO
         public string OldPassword { get; set; }
         public string NewPassword { get; set; }
         public string ConfirmNewPassword { get; set; }
+    }
+
+    public class UserDTO
+    {
+        public int AccountId { get; set; }
+        public string AccountName { get; set; }
+        public List<string> Roles { get; set; }
+
     }
 }

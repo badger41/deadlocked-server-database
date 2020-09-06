@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using DeadlockedDatabase.Models;
+using DeadlockedDatabase.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,6 +18,7 @@ namespace DeadlockedDatabase.Controllers
             db = _db;
         }
 
+        [Authorize]
         [HttpGet, Route("getEULA")]
         public async Task<dynamic> getEULA(int? eulaId, DateTime? fromDt, DateTime? toDt)
         {
@@ -48,6 +49,7 @@ namespace DeadlockedDatabase.Controllers
             return eula;
         }
 
+        [Authorize]
         [HttpGet, Route("getAnnouncements")]
         public async Task<dynamic> getAnnouncements(int? accouncementId, DateTime? fromDt, DateTime? toDt)
         {
@@ -81,6 +83,7 @@ namespace DeadlockedDatabase.Controllers
             return announcement;
         }
 
+        [Authorize]
         [HttpGet, Route("getAnnouncementsList")]
         public async Task<dynamic> getAnnouncementsList(DateTime? Dt, int TakeSize = 10)
         {

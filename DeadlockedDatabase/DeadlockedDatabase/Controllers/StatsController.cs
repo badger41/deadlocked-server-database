@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DeadlockedDatabase.DTO;
-using DeadlockedDatabase.Models;
+using DeadlockedDatabase.Entities;
+using DeadlockedDatabase.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,15 +15,18 @@ namespace DeadlockedDatabase.Controllers
     public class StatsController : ControllerBase
     {
         private Ratchet_DeadlockedContext db;
-        public StatsController(Ratchet_DeadlockedContext _db)
+        private IAuthService authService;
+        public StatsController(Ratchet_DeadlockedContext _db, IAuthService _authService)
         {
             db = _db;
+            authService = _authService;
         }
 
+        [Authorize("database")]
         [HttpGet, Route("initStats")]
         public async Task<dynamic> initStats(int AccountId)
         {
-            AccountController ac = new AccountController(db);
+            AccountController ac = new AccountController(db, authService);
             AccountDTO existingAcc = await ac.getAccount(AccountId);
 
             if (existingAcc == null)
@@ -44,13 +48,14 @@ namespace DeadlockedDatabase.Controllers
             return Ok("Stats Created");
         }
 
+        [Authorize]
         [HttpGet, Route("getPlayerLeaderboardIndex")]
         public async Task<dynamic> getPlayerLeaderboardIndex(int AccountId, int StatId)
         {
             List<AccountStat> stats = db.AccountStat.Where(s => s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.AccountId).ToList();
             AccountStat statForAccount = stats.Where(s => s.AccountId == AccountId).FirstOrDefault();
             Account acc = db.Account.Where(a => a.AccountId == AccountId).FirstOrDefault();
-            AccountController ac = new AccountController(db);
+            AccountController ac = new AccountController(db, authService);
             int totalAccounts = await ac.getActiveAccountCountByAppId((int)acc.AppId);
             if (acc.IsActive == true)
             {
@@ -68,11 +73,12 @@ namespace DeadlockedDatabase.Controllers
             return StatusCode(400, $"Account {AccountId} is inactive.");
         }
 
+        [Authorize]
         [HttpGet, Route("getLeaderboard")]
         public async Task<List<LeaderboardDTO>> getLeaderboard(int StatId, int StartIndex, int Size)
         {
             List<AccountStat> stats = db.AccountStat.Where(s => s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.AccountId).Skip(StartIndex*Size).Take(Size).ToList();
-            AccountController ac = new AccountController(db);
+            AccountController ac = new AccountController(db, authService);
 
             List<LeaderboardDTO> board = (from s in stats
                                           join a in db.Account
@@ -91,6 +97,7 @@ namespace DeadlockedDatabase.Controllers
             return board;
         }
 
+        [Authorize("database")]
         [HttpPost, Route("postStats")]
         public async Task<dynamic> postStats([FromBody] StatPostDTO statData)
         {

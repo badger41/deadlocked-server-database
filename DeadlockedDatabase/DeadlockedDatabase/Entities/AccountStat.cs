@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DeadlockedDatabase.Models
+namespace DeadlockedDatabase.Entities
 {
     public partial class AccountStat
     {

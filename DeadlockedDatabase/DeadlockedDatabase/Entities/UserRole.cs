@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DeadlockedDatabase.Models
+namespace DeadlockedDatabase.Entities
 {
-    public partial class DimAnnouncements
+    public partial class UserRole
     {
         public int Id { get; set; }
-        public string AnnouncementTitle { get; set; }
-        public string AnnouncementBody { get; set; }
+        public int AccountId { get; set; }
+        public int RoleId { get; set; }
         public DateTime CreateDt { get; set; }
-        public DateTime? ModifiedDt { get; set; }
         public DateTime FromDt { get; set; }
         public DateTime? ToDt { get; set; }
     }

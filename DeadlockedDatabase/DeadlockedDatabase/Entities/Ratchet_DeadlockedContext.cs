@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace DeadlockedDatabase.Models
+namespace DeadlockedDatabase.Entities
 {
     public partial class Ratchet_DeadlockedContext : DbContext
     {
@@ -24,7 +24,9 @@ namespace DeadlockedDatabase.Models
         public virtual DbSet<DimAnnouncements> DimAnnouncements { get; set; }
         public virtual DbSet<DimEula> DimEula { get; set; }
         public virtual DbSet<DimStats> DimStats { get; set; }
+        public virtual DbSet<Roles> Roles { get; set; }
         public virtual DbSet<ServerLog> ServerLog { get; set; }
+        public virtual DbSet<UserRole> UserRole { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -242,6 +244,29 @@ namespace DeadlockedDatabase.Models
                     .HasMaxLength(100);
             });
 
+            modelBuilder.Entity<Roles>(entity =>
+            {
+                entity.HasKey(e => e.RoleId);
+
+                entity.ToTable("roles", "KEYS");
+
+                entity.Property(e => e.RoleId).HasColumnName("role_id");
+
+                entity.Property(e => e.CreateDt)
+                    .HasColumnName("create_dt")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.IsActive)
+                    .IsRequired()
+                    .HasColumnName("is_active")
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.RoleName)
+                    .IsRequired()
+                    .HasColumnName("role_name")
+                    .HasMaxLength(50);
+            });
+
             modelBuilder.Entity<ServerLog>(entity =>
             {
                 entity.ToTable("server_log", "LOGS");
@@ -270,6 +295,27 @@ namespace DeadlockedDatabase.Models
                     .HasMaxLength(50);
 
                 entity.Property(e => e.Payload).HasColumnName("payload");
+            });
+
+            modelBuilder.Entity<UserRole>(entity =>
+            {
+                entity.ToTable("user_role", "ACCOUNTS");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.AccountId).HasColumnName("account_id");
+
+                entity.Property(e => e.CreateDt)
+                    .HasColumnName("create_dt")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.FromDt)
+                    .HasColumnName("from_dt")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.RoleId).HasColumnName("role_id");
+
+                entity.Property(e => e.ToDt).HasColumnName("to_dt");
             });
 
             OnModelCreatingPartial(modelBuilder);

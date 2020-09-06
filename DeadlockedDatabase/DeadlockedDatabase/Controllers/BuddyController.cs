@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DeadlockedDatabase.DTO;
-using DeadlockedDatabase.Models;
+using DeadlockedDatabase.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,6 +18,7 @@ namespace DeadlockedDatabase.Controllers
         {
             db = _db;
         }
+        [Authorize]
         [HttpPost, Route("addBuddy")]
         public async Task<dynamic> addBuddy([FromBody] BuddyDTO buddyReq)
         {
@@ -45,6 +46,7 @@ namespace DeadlockedDatabase.Controllers
             return Ok("Buddy Added");
         }
 
+        [Authorize]
         [HttpPost, Route("removeBuddy")]
         public async Task<dynamic> removeBuddy([FromBody] BuddyDTO buddyReq)
         {
@@ -60,6 +62,7 @@ namespace DeadlockedDatabase.Controllers
             return Ok("Buddy Removed");
         }
 
+        [Authorize]
         [HttpPost, Route("addIgnored")]
         public async Task<dynamic> addIgnored([FromBody] IgnoredDTO ignoreReq)
         {
@@ -87,6 +90,7 @@ namespace DeadlockedDatabase.Controllers
             return Ok("Player Ignored");
         }
 
+        [Authorize]
         [HttpPost, Route("removeIgnored")]
         public async Task<dynamic> removeIgnored([FromBody] IgnoredDTO ignoreReq)
         {
