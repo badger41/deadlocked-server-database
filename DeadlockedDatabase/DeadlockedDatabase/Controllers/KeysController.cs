@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DeadlockedDatabase.DTO;
 using DeadlockedDatabase.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -47,6 +48,63 @@ namespace DeadlockedDatabase.Controllers
 
             return eula;
         }
+
+        [HttpGet, Route("deleteEULA")]
+        public async Task<dynamic> deleteEULA(int id)
+        {
+            var eula = db.DimEula.FirstOrDefault(x => x.Id == id);
+            if (eula == null)
+            {
+                return StatusCode(403, "Cannot delete an eula entry that doesn't exist.");
+            }
+
+            db.DimEula.Remove(eula);
+            db.SaveChanges();
+
+            return Ok("EULA Deleted");
+        }
+
+        [HttpPost, Route("updateEULA")]
+        public async Task<dynamic> updateEULA([FromBody] ChangeEulaDTO request)
+        {
+            var eula = db.DimEula.FirstOrDefault(x => x.Id == request.Id);
+            if (eula == null)
+            {
+                return StatusCode(403, "Cannot change an eula entry that doesn't exist.");
+            }
+
+            db.DimEula.Attach(eula);
+            db.Entry(eula).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+
+            eula.EulaTitle = request.EulaTitle ?? eula.EulaTitle;
+            eula.EulaBody = request.EulaBody ?? eula.EulaBody;
+            eula.ModifiedDt = DateTime.UtcNow;
+            eula.FromDt = request.FromDt ?? eula.FromDt;
+            eula.ToDt = request.ToDt ?? eula.ToDt;
+
+            db.SaveChanges();
+
+            return Ok("EULA Changed");
+        }
+
+        [HttpPost, Route("postEULA")]
+        public async Task<dynamic> postEULA([FromBody] AddEulaDTO request)
+        {
+            var eula = new DimEula()
+            {
+                EulaTitle = request.EulaTitle,
+                EulaBody = request.EulaBody,
+                FromDt = request.FromDt ?? DateTime.UtcNow,
+                ToDt = request.ToDt,
+                CreateDt = DateTime.UtcNow,
+            };
+
+            db.DimEula.Add(eula);
+            db.SaveChanges();
+
+            return Ok("EULA Added");
+        }
+
 
         [HttpGet, Route("getAnnouncements")]
         public async Task<dynamic> getAnnouncements(int? accouncementId, DateTime? fromDt, DateTime? toDt)
@@ -95,6 +153,62 @@ namespace DeadlockedDatabase.Controllers
                             select a).Take(TakeSize).ToList();
 
             return announcements;
+        }
+
+        [HttpGet, Route("deleteAnnouncement")]
+        public async Task<dynamic> deleteAnnouncement(int id)
+        {
+            var announcement = db.DimAnnouncements.FirstOrDefault(x => x.Id == id);
+            if (announcement == null)
+            {
+                return StatusCode(403, "Cannot delete an announcement that doesn't exist.");
+            }
+
+            db.DimAnnouncements.Remove(announcement);
+            db.SaveChanges();
+
+            return Ok("Announcement Deleted");
+        }
+
+        [HttpPost, Route("updateAnnouncement")]
+        public async Task<dynamic> updateAnnouncement([FromBody] ChangeAnnouncementDTO request)
+        {
+            var announcement = db.DimAnnouncements.FirstOrDefault(x => x.Id == request.Id);
+            if (announcement == null)
+            {
+                return StatusCode(403, "Cannot change an announcement that doesn't exist.");
+            }
+
+            db.DimAnnouncements.Attach(announcement);
+            db.Entry(announcement).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+
+            announcement.AnnouncementTitle = request.AnnouncementTitle ?? announcement.AnnouncementTitle;
+            announcement.AnnouncementBody = request.AnnouncementBody ?? announcement.AnnouncementBody;
+            announcement.ModifiedDt = DateTime.UtcNow;
+            announcement.FromDt = request.FromDt ?? announcement.FromDt;
+            announcement.ToDt = request.ToDt ?? announcement.ToDt;
+
+            db.SaveChanges();
+
+            return Ok("Announcement Changed");
+        }
+
+        [HttpPost, Route("postAnnouncement")]
+        public async Task<dynamic> postAnnouncement([FromBody] AddAnnouncementDTO request)
+        {
+            var announcement = new DimAnnouncements()
+            {
+                AnnouncementTitle = request.AnnouncementTitle,
+                AnnouncementBody = request.AnnouncementBody,
+                FromDt = request.FromDt ?? DateTime.UtcNow,
+                ToDt = request.ToDt,
+                CreateDt = DateTime.UtcNow,
+            };
+
+            db.DimAnnouncements.Add(announcement);
+            db.SaveChanges();
+
+            return Ok("Announcement Added");
         }
     }
 }
