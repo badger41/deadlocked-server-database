@@ -80,5 +80,21 @@ namespace DeadlockedDatabase.Controllers
 
             return announcement;
         }
+
+        [HttpGet, Route("getAnnouncementsList")]
+        public async Task<dynamic> getAnnouncementsList(DateTime? Dt, int TakeSize = 10)
+        {
+            dynamic announcements = null;
+            if (Dt == null)
+                Dt = DateTime.UtcNow;
+            DateTime now = DateTime.UtcNow;
+            announcements = (from a in db.DimAnnouncements
+                             orderby a.FromDt
+                            where a.FromDt <= Dt
+                    && (a.ToDt == null || a.ToDt >= Dt)
+                            select a).Take(TakeSize).ToList();
+
+            return announcements;
+        }
     }
 }

@@ -177,7 +177,8 @@ namespace DeadlockedDatabase.Models
 
                 entity.Property(e => e.AnnouncementBody)
                     .IsRequired()
-                    .HasColumnName("announcement_body");
+                    .HasColumnName("announcement_body")
+                    .HasMaxLength(1000);
 
                 entity.Property(e => e.AnnouncementTitle)
                     .IsRequired()
