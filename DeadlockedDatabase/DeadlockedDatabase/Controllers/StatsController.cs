@@ -77,8 +77,8 @@ namespace DeadlockedDatabase.Controllers
         [HttpGet, Route("getLeaderboard")]
         public async Task<List<LeaderboardDTO>> getLeaderboard(int StatId, int StartIndex, int Size)
         {
-            List<AccountStat> stats = db.AccountStat.Where(s => s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.AccountId).Skip(StartIndex*Size).Take(Size).ToList();
-            AccountController ac = new AccountController(db, authService);
+            List<AccountStat> stats = db.AccountStat.Where(s => s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.AccountId).Skip(StartIndex).Take(Size).ToList();
+            AccountController ac = new AccountController(db);
 
             List<LeaderboardDTO> board = (from s in stats
                                           join a in db.Account

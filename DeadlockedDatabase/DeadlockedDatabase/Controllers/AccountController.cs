@@ -62,13 +62,16 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize]
         [HttpGet, Route("getAccount")]
-        public async Task<AccountDTO> getAccount(int AccountId)
+        public async Task<dynamic> getAccount(int AccountId)
         {
             Account existingAccount = db.Account.Include(a => a.AccountFriend)
                                                 .Include(a => a.AccountIgnored)
                                                 .Include(a => a.AccountStat)
                                                 .Where(a => a.AccountId == AccountId)
                                                 .FirstOrDefault();
+
+            if (existingAccount == null)
+                return NotFound();
 
             AccountDTO account = new AccountDTO()
             {
