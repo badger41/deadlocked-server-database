@@ -75,4 +75,11 @@ namespace DeadlockedDatabase.DTO
         public List<string> Roles { get; set; }
 
     }
+
+    public class BanRequestDTO
+    {
+        public string MacAddress { get; set; }
+        public string IpAddress { get; set; }
+        public DateTime ToDt { get; set; }
+    }
 }

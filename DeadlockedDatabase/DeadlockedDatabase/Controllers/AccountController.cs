@@ -64,6 +64,7 @@ namespace DeadlockedDatabase.Controllers
         [HttpGet, Route("getAccount")]
         public async Task<dynamic> getAccount(int AccountId)
         {
+            DateTime now = DateTime.UtcNow;
             Account existingAccount = db.Account.Include(a => a.AccountFriend)
                                                 .Include(a => a.AccountIgnored)
                                                 .Include(a => a.AccountStat)
@@ -72,6 +73,8 @@ namespace DeadlockedDatabase.Controllers
 
             if (existingAccount == null)
                 return NotFound();
+
+            var existingBan = (from b in db.Banned where b.AccountId == existingAccount.AccountId && b.FromDt <= now && (b.ToDt == null || b.ToDt > now) select b).FirstOrDefault();
 
             AccountDTO account = new AccountDTO()
             {
@@ -96,7 +99,7 @@ namespace DeadlockedDatabase.Controllers
                            }).ToList(),
                 AccountWideStats = existingAccount.AccountStat.OrderBy(s => s.StatId).Select(s => s.StatValue).ToList(),
                 MediusStats = existingAccount.MediusStats,
-                IsBanned = false,
+                IsBanned = existingBan != null ? true : false,
                 AppId = existingAccount.AppId,
             };
 
@@ -320,6 +323,64 @@ namespace DeadlockedDatabase.Controllers
 
             return Ok("Password Updated");
 
+        }
+
+        [Authorize]
+        [HttpPost, Route("getIpIsBanned")]
+        public async Task<bool> getIpIsBanned([FromBody] string IpAddress)
+        {
+            DateTime now = DateTime.UtcNow;
+            BannedIp ban = (from b in db.BannedIp
+                            where b.IpAddress == IpAddress
+                            && b.FromDt <= now
+                            && (b.ToDt == null || b.ToDt > now)
+                            select b).FirstOrDefault();
+            return ban != null ? true : false;
+        }
+
+        [Authorize]
+        [HttpPost, Route("getMacIsBanned")]
+        public async Task<bool> getMacIsBanned([FromBody] string MacAddress)
+        {
+            DateTime now = DateTime.UtcNow;
+            BannedMac ban = (from b in db.BannedMac
+                             where b.MacAddress == MacAddress
+                            && b.FromDt <= now
+                            && (b.ToDt == null || b.ToDt > now)
+                            select b).FirstOrDefault();
+            return ban != null ? true : false;
+        }
+
+        [Authorize]
+        [HttpPost, Route("banIp")]
+        public async Task<dynamic> banIp([FromBody] BanRequestDTO request)
+        {
+            DateTime now = DateTime.UtcNow;
+            BannedIp newBan = new BannedIp()
+            {
+                IpAddress = request.IpAddress,
+                FromDt = now,
+                ToDt = request.ToDt
+            };
+            db.BannedIp.Add(newBan);
+            db.SaveChanges();
+            return Ok("Ip Banned");
+        }
+
+        [Authorize]
+        [HttpPost, Route("banMac")]
+        public async Task<dynamic> banMac([FromBody] BanRequestDTO request)
+        {
+            DateTime now = DateTime.UtcNow;
+            BannedMac newBan = new BannedMac()
+            {
+                MacAddress = request.MacAddress,
+                FromDt = now,
+                ToDt = request.ToDt
+            };
+            db.BannedMac.Add(newBan);
+            db.SaveChanges();
+            return Ok("Mac Banned");
         }
     }
 }

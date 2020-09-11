@@ -214,5 +214,18 @@ namespace DeadlockedDatabase.Controllers
 
             return Ok("Announcement Added");
         }
+
+        [Authorize]
+        [HttpGet, Route("getServerFlags")]
+        public async Task<dynamic> getServerFlags()
+        {
+            var flags = (from sg in db.ServerFlags
+                         select sg).ToList();
+
+            return new ServerFlagsDTO()
+            {
+                MaintenanceMode = bool.Parse(flags.Where(f => f.ServerFlag == "maintenance_mode").Select(f => f.Value).FirstOrDefault()),
+            };
+        }
     }
 }

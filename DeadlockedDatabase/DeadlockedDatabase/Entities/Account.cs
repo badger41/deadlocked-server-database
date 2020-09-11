@@ -22,6 +22,7 @@ namespace DeadlockedDatabase.Entities
         public bool? IsActive { get; set; }
         public int? AppId { get; set; }
         public string MediusStats { get; set; }
+        public string LastSignInIp { get; set; }
 
         public virtual ICollection<AccountFriend> AccountFriend { get; set; }
         public virtual ICollection<AccountIgnored> AccountIgnored { get; set; }

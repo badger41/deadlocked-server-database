@@ -21,10 +21,13 @@ namespace DeadlockedDatabase.Entities
         public virtual DbSet<AccountStat> AccountStat { get; set; }
         public virtual DbSet<AccountStatus> AccountStatus { get; set; }
         public virtual DbSet<Banned> Banned { get; set; }
+        public virtual DbSet<BannedIp> BannedIp { get; set; }
+        public virtual DbSet<BannedMac> BannedMac { get; set; }
         public virtual DbSet<DimAnnouncements> DimAnnouncements { get; set; }
         public virtual DbSet<DimEula> DimEula { get; set; }
         public virtual DbSet<DimStats> DimStats { get; set; }
         public virtual DbSet<Roles> Roles { get; set; }
+        public virtual DbSet<ServerFlags> ServerFlags { get; set; }
         public virtual DbSet<ServerLog> ServerLog { get; set; }
         public virtual DbSet<UserRole> UserRole { get; set; }
 
@@ -58,6 +61,10 @@ namespace DeadlockedDatabase.Entities
                     .HasDefaultValueSql("((1))");
 
                 entity.Property(e => e.LastSignInDt).HasColumnName("last_sign_in_dt");
+
+                entity.Property(e => e.LastSignInIp)
+                    .HasColumnName("last_sign_in_ip")
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.MachineId)
                     .HasColumnName("machine_id")
@@ -171,6 +178,42 @@ namespace DeadlockedDatabase.Entities
                 entity.Property(e => e.ToDt).HasColumnName("to_dt");
             });
 
+            modelBuilder.Entity<BannedIp>(entity =>
+            {
+                entity.ToTable("banned_ip", "ACCOUNTS");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.FromDt)
+                    .HasColumnName("from_dt")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.IpAddress)
+                    .IsRequired()
+                    .HasColumnName("ip_address")
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.ToDt).HasColumnName("to_dt");
+            });
+
+            modelBuilder.Entity<BannedMac>(entity =>
+            {
+                entity.ToTable("banned_mac", "ACCOUNTS");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.FromDt)
+                    .HasColumnName("from_dt")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.MacAddress)
+                    .IsRequired()
+                    .HasColumnName("mac_address")
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.ToDt).HasColumnName("to_dt");
+            });
+
             modelBuilder.Entity<DimAnnouncements>(entity =>
             {
                 entity.ToTable("dim_announcements", "KEYS");
@@ -265,6 +308,23 @@ namespace DeadlockedDatabase.Entities
                     .IsRequired()
                     .HasColumnName("role_name")
                     .HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<ServerFlags>(entity =>
+            {
+                entity.ToTable("server_flags", "KEYS");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.ServerFlag)
+                    .IsRequired()
+                    .HasColumnName("server_flag")
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Value)
+                    .IsRequired()
+                    .HasColumnName("value")
+                    .HasMaxLength(100);
             });
 
             modelBuilder.Entity<ServerLog>(entity =>
