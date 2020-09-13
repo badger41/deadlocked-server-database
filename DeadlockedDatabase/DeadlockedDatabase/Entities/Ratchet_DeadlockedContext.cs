@@ -325,6 +325,8 @@ namespace DeadlockedDatabase.Entities
                     .IsRequired()
                     .HasColumnName("value")
                     .HasMaxLength(100);
+                entity.Property(e => e.FromDt).HasColumnName("from_dt");
+                entity.Property(e => e.ToDt).HasColumnName("to_dt");
             });
 
             modelBuilder.Entity<ServerLog>(entity =>

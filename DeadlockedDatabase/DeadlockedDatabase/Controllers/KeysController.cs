@@ -224,7 +224,11 @@ namespace DeadlockedDatabase.Controllers
 
             return new ServerFlagsDTO()
             {
-                MaintenanceMode = bool.Parse(flags.Where(f => f.ServerFlag == "maintenance_mode").Select(f => f.Value).FirstOrDefault()),
+                MaintenanceMode = flags.Where(f => f.ServerFlag == "maintenance_mode").Select(f => new MaintenanceDTO() { 
+                    IsActive = bool.Parse(f.Value),
+                    FromDt = f.FromDt,
+                    ToDt = f.ToDt
+                }).FirstOrDefault(),
             };
         }
     }

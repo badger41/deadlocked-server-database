@@ -259,6 +259,20 @@ namespace DeadlockedDatabase.Controllers
 
             return Ok();
         }
+        [Authorize("database")]
+        [HttpPost, Route("postAccountIp")]
+        public async Task<dynamic> postAccountIp([FromBody] string IpAddress, int AccountId)
+        {
+            Account existingAccount = db.Account.Where(a => a.AccountId == AccountId).FirstOrDefault();
+            if (existingAccount == null)
+                return NotFound();
+
+            existingAccount.LastSignInIp = IpAddress;
+            db.Account.Attach(existingAccount);
+            db.Entry(existingAccount).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            db.SaveChanges();
+            return Ok();
+        }
         [Authorize]
         [HttpGet, Route("getAccountStatus")]
         public async Task<dynamic> getAccountStatus(int AccountId)

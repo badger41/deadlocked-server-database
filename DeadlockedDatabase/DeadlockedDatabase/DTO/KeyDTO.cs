@@ -11,6 +11,13 @@ namespace DeadlockedDatabase.DTO
 
     public class ServerFlagsDTO
     {
-        public bool MaintenanceMode { get; set; }
+        public MaintenanceDTO MaintenanceMode { get; set; }
+    }
+
+    public class MaintenanceDTO
+    {
+        public bool IsActive { get; set; }
+        public DateTime? FromDt { get; set; }
+        public DateTime? ToDt { get; set; }
     }
 }
