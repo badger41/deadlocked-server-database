@@ -15,6 +15,7 @@ namespace DeadlockedDatabase.DTO
         public List<AccountRelationDTO> Ignored { get; set; }
         public List<int> AccountWideStats { get; set; }
         public string MediusStats { get; set; }
+        public string MachineId { get; set; }
         public bool IsBanned { get; set; }
         public int? AppId { get; set; }
     }
