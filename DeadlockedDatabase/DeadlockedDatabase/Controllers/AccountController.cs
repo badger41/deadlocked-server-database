@@ -99,6 +99,7 @@ namespace DeadlockedDatabase.Controllers
                            }).ToList(),
                 AccountWideStats = existingAccount.AccountStat.OrderBy(s => s.StatId).Select(s => s.StatValue).ToList(),
                 MediusStats = existingAccount.MediusStats,
+                MachineId = existingAccount.MachineId,
                 IsBanned = existingBan != null ? true : false,
                 AppId = existingAccount.AppId,
             };
