@@ -274,6 +274,7 @@ namespace DeadlockedDatabase.Controllers
             db.SaveChanges();
             return Ok();
         }
+
         [Authorize]
         [HttpGet, Route("getAccountStatus")]
         public async Task<dynamic> getAccountStatus(int AccountId)
@@ -313,6 +314,27 @@ namespace DeadlockedDatabase.Controllers
             db.SaveChanges();
 
             return await getAccountStatus(StatusData.AccountId);
+        }
+
+        [Authorize]
+        [HttpDelete, Route("clearAccountStatuses")]
+        public async Task<dynamic> clearAccountStatuses()
+        {
+            db.AccountStatus.RemoveRange(db.AccountStatus);
+            db.SaveChanges();
+
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpGet, Route("getOnlineAccounts")]
+        public async Task<dynamic> getOnlineAccounts(int pageId, int pageSize)
+        {
+            var accounts = db.AccountStatus.Where(acs => acs.LoggedIn).Skip((pageId - 1) * pageSize).Take(pageSize);
+            if (accounts == null)
+                return NotFound();
+
+            return accounts;
         }
 
         [Authorize]
