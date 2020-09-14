@@ -328,13 +328,22 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize]
         [HttpGet, Route("getOnlineAccounts")]
-        public async Task<dynamic> getOnlineAccounts(int pageId, int pageSize)
+        public async Task<dynamic> getOnlineAccounts(int pageIndex, int pageSize)
         {
-            var accounts = db.AccountStatus.Where(acs => acs.LoggedIn).Skip((pageId - 1) * pageSize).Take(pageSize);
-            if (accounts == null)
-                return NotFound();
+            var results = db.AccountStatus
+                .Where(acs => acs.LoggedIn)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .Select(s => new
+                {
+                    s.AccountId,
+                    db.Account.FirstOrDefault(a => a.AccountId == s.AccountId).AccountName,
+                    s.WorldId,
+                    s.GameId,
+                    s.ChannelId,
+                });
 
-            return accounts;
+            return results;
         }
 
         [Authorize]
