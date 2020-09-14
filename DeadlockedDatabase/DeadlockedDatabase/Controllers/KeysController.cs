@@ -247,7 +247,7 @@ namespace DeadlockedDatabase.Controllers
                     IsActive = bool.Parse(f.Value),
                     FromDt = f.FromDt,
                     ToDt = f.ToDt
-                }).FirstOrDefault(),
+                }).LastOrDefault(),
             };
         }
     }
