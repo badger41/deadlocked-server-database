@@ -216,6 +216,24 @@ namespace DeadlockedDatabase.Controllers
         }
 
         [Authorize]
+        [HttpPost, Route("postMaintenanceFlag")]
+        public async Task<dynamic> postMaintenanceFlag([FromBody] MaintenanceDTO request)
+        {
+            var flag = new ServerFlags()
+            {
+                ServerFlag = "maintenance_mode",
+                FromDt = request.FromDt,
+                ToDt = request.ToDt,
+                Value = request.IsActive.ToString()
+            };
+
+            db.ServerFlags.Add(flag);
+            db.SaveChanges();
+
+            return Ok("Maintenance Flag Added");
+        }
+
+        [Authorize]
         [HttpGet, Route("getServerFlags")]
         public async Task<dynamic> getServerFlags()
         {
@@ -224,7 +242,8 @@ namespace DeadlockedDatabase.Controllers
 
             return new ServerFlagsDTO()
             {
-                MaintenanceMode = flags.Where(f => f.ServerFlag == "maintenance_mode").Select(f => new MaintenanceDTO() { 
+                MaintenanceMode = flags.Where(f => f.ServerFlag == "maintenance_mode").Select(f => new MaintenanceDTO()
+                {
                     IsActive = bool.Parse(f.Value),
                     FromDt = f.FromDt,
                     ToDt = f.ToDt
