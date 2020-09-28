@@ -7,6 +7,7 @@ using DeadlockedDatabase.Models;
 using DeadlockedDatabase.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DeadlockedDatabase.Controllers
 {
@@ -216,6 +217,35 @@ namespace DeadlockedDatabase.Controllers
         }
 
         [Authorize]
+        [HttpPost, Route("postMaintenanceFlag")]
+        public async Task<dynamic> postMaintenanceFlag([FromBody] MaintenanceDTO request)
+        {
+            var existingData = db.ServerFlags.Where(acs => acs.ServerFlag == "maintenance_mode").FirstOrDefault();
+            if (existingData != null)
+            {
+                existingData.Value = request.IsActive.ToString();
+                existingData.FromDt = request.FromDt;
+                existingData.ToDt = request.ToDt;
+                db.ServerFlags.Attach(existingData);
+                db.Entry(existingData).State = EntityState.Modified;
+            }
+            else
+            {
+                var flag = new ServerFlags()
+                {
+                    ServerFlag = "maintenance_mode",
+                    FromDt = request.FromDt,
+                    ToDt = request.ToDt,
+                    Value = request.IsActive.ToString()
+                };
+                db.ServerFlags.Add(flag);
+            }
+            db.SaveChanges();
+
+            return Ok("Maintenance Flag Added");
+        }
+
+        [Authorize]
         [HttpGet, Route("getServerFlags")]
         public async Task<dynamic> getServerFlags()
         {
@@ -224,7 +254,8 @@ namespace DeadlockedDatabase.Controllers
 
             return new ServerFlagsDTO()
             {
-                MaintenanceMode = flags.Where(f => f.ServerFlag == "maintenance_mode").Select(f => new MaintenanceDTO() { 
+                MaintenanceMode = flags.Where(f => f.ServerFlag == "maintenance_mode").Select(f => new MaintenanceDTO()
+                {
                     IsActive = bool.Parse(f.Value),
                     FromDt = f.FromDt,
                     ToDt = f.ToDt
