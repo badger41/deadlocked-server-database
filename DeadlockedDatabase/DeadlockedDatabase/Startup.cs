@@ -9,6 +9,7 @@ using DeadlockedDatabase.Helpers;
 using DeadlockedDatabase.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -113,12 +114,20 @@ namespace DeadlockedDatabase
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.Use((context, next) =>
+            {
+                context.Request.EnableBuffering();
+                return next();
+            });
+
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                //app.UseDeveloperExceptionPage();
+                app.UseExceptionHandler("/api/logs/error");
             }
 
             app.UseMiddleware<JwtMiddleware>();
+            //app.UseMiddleware<ExceptionMiddleware>();
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();

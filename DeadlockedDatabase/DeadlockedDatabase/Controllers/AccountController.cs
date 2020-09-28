@@ -140,6 +140,17 @@ namespace DeadlockedDatabase.Controllers
                                                       StatValue = ds.DefaultValue
                                                   }).ToList();
                     db.AccountStat.AddRange(newStats);
+
+                    AccountStatus newStatusData = new AccountStatus()
+                    {
+                        AccountId = acc.AccountId,
+                        LoggedIn = false,
+                        GameId = null,
+                        ChannelId = null,
+                        WorldId = null
+                    };
+                    db.AccountStatus.Add(newStatusData);
+
                     db.SaveChanges();
                     return await getAccount(acc.AccountId);
                 } else
@@ -298,17 +309,6 @@ namespace DeadlockedDatabase.Controllers
                 existingData.WorldId = StatusData.WorldId;
                 db.AccountStatus.Attach(existingData);
                 db.Entry(existingData).State = EntityState.Modified;
-            } else
-            {
-                AccountStatus newStatusData = new AccountStatus()
-                {
-                    AccountId = StatusData.AccountId,
-                    LoggedIn = StatusData.LoggedIn,
-                    GameId = StatusData.GameId,
-                    ChannelId = StatusData.ChannelId,
-                    WorldId = StatusData.WorldId
-                };
-                db.AccountStatus.Add(newStatusData);
             }
             db.SaveChanges();
 
