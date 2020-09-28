@@ -122,7 +122,9 @@ namespace DeadlockedDatabase
 
             if (env.IsDevelopment())
             {
-                //app.UseDeveloperExceptionPage();
+                app.UseDeveloperExceptionPage();
+            } else
+            {
                 app.UseExceptionHandler("/api/logs/error");
             }
 
