@@ -65,46 +65,98 @@ namespace DeadlockedDatabase.Controllers
         public async Task<dynamic> getAccount(int AccountId)
         {
             DateTime now = DateTime.UtcNow;
-            Account existingAccount = db.Account.Include(a => a.AccountFriend)
-                                                .Include(a => a.AccountIgnored)
-                                                .Include(a => a.AccountStat)
-                                                .Where(a => a.AccountId == AccountId)
-                                                .FirstOrDefault();
+            Account existingAccount = db.Account.Where(a => a.AccountId == AccountId).FirstOrDefault();
+            //Account existingAccount = db.Account//.Include(a => a.AccountFriend)
+            //                                    //.Include(a => a.AccountIgnored)
+            //                                    .Include(a => a.AccountStat)
+            //                                    .Where(a => a.AccountId == AccountId)
+            //                                    .FirstOrDefault();
+
+
 
             if (existingAccount == null)
                 return NotFound();
 
             var existingBan = (from b in db.Banned where b.AccountId == existingAccount.AccountId && b.FromDt <= now && (b.ToDt == null || b.ToDt > now) select b).FirstOrDefault();
+            var accountList = db.Account.ToList();
 
-            AccountDTO account = new AccountDTO()
+            AccountDTO account2 = (from a in db.Account
+                                   where a.AccountId == AccountId
+                                   select new AccountDTO()
+                                   {
+                                       AccountId = a.AccountId,
+                                       AccountName = a.AccountName,
+                                       AccountPassword = a.AccountPassword,
+                                       AccountWideStats = a.AccountStat.OrderBy(s => s.StatId).Select(s => s.StatValue).ToList(),
+                                       Friends = new List<AccountRelationDTO>(),
+                                       Ignored = new List<AccountRelationDTO>(),
+                                       //Friends = a.AccountFriend.Select(af => new AccountRelationDTO()
+                                       //{
+                                       //    AccountId = af.FriendAccountId,
+                                       //}).ToList(),
+                                       //Ignored = a.AccountIgnored.Select(ai => new AccountRelationDTO()
+                                       //{
+                                       //    AccountId = ai.IgnoredAccountId,
+                                       //}).ToList(),
+                                       MediusStats = existingAccount.MediusStats,
+                                       MachineId = existingAccount.MachineId,
+                                       IsBanned = existingBan != null ? true : false,
+                                       AppId = existingAccount.AppId,
+                                   }).FirstOrDefault();
+            List<int> friendIds = db.AccountFriend.Where(a => a.AccountId == AccountId).Select(a => a.FriendAccountId).ToList();
+            List<int> ignoredIds = db.AccountIgnored.Where(a => a.AccountId == AccountId).Select(a => a.IgnoredAccountId).ToList();
+            foreach (int friendId in friendIds)
             {
-                AccountId = existingAccount.AccountId,
-                AccountName = existingAccount.AccountName,
-                AccountPassword = existingAccount.AccountPassword,
-                Friends = (from f in existingAccount.AccountFriend
-                           join a in db.Account
-                            on f.FriendAccountId equals a.AccountId
-                           select new AccountRelationDTO
-                           {
-                               AccountId = f.FriendAccountId,
-                               AccountName = a.AccountName
-                           }).ToList(),
-                Ignored = (from f in existingAccount.AccountIgnored
-                            join a in db.Account
-                            on f.IgnoredAccountId equals a.AccountId
-                           select new AccountRelationDTO
-                           {
-                               AccountId = f.IgnoredAccountId,
-                               AccountName = a.AccountName
-                           }).ToList(),
-                AccountWideStats = existingAccount.AccountStat.OrderBy(s => s.StatId).Select(s => s.StatValue).ToList(),
-                MediusStats = existingAccount.MediusStats,
-                MachineId = existingAccount.MachineId,
-                IsBanned = existingBan != null ? true : false,
-                AppId = existingAccount.AppId,
-            };
+                AccountRelationDTO friendDTO = new AccountRelationDTO()
+                {
+                    AccountId = friendId,
+                    AccountName = accountList.Where(a => a.AccountId == friendId).Select(a => a.AccountName).FirstOrDefault()
+                };
+                account2.Friends.Add(friendDTO);
+            }
+            foreach (int ignoredId in ignoredIds)
+            {
+                AccountRelationDTO friendDTO = new AccountRelationDTO()
+                {
+                    AccountId = ignoredId,
+                    AccountName = accountList.Where(a => a.AccountId == ignoredId).Select(a => a.AccountName).FirstOrDefault()
+                };
+                account2.Friends.Add(friendDTO);
+            }
+            //foreach (AccountRelationDTO ignored in account2.Ignored)
+            //{
+            //    ignored.AccountName = accountList.Where(a => a.AccountId == ignored.AccountId).Select(a => a.AccountName).FirstOrDefault();
+            //}
 
-            return account;
+            //AccountDTO account = new AccountDTO()
+            //{
+            //    AccountId = existingAccount.AccountId,
+            //    AccountName = existingAccount.AccountName,
+            //    AccountPassword = existingAccount.AccountPassword,
+            //    //Friends = (from f in existingAccount.AccountFriend
+            //    //           join a in db.Account
+            //    //            on f.FriendAccountId equals a.AccountId
+            //    //           select new AccountRelationDTO
+            //    //           {
+            //    //               AccountId = f.FriendAccountId,
+            //    //               AccountName = a.AccountName
+            //    //           }).ToList(),
+            //    //Ignored = (from f in existingAccount.AccountIgnored
+            //    //            join a in db.Account
+            //    //            on f.IgnoredAccountId equals a.AccountId
+            //    //           select new AccountRelationDTO
+            //    //           {
+            //    //               AccountId = f.IgnoredAccountId,
+            //    //               AccountName = a.AccountName
+            //    //           }).ToList(),
+            //    AccountWideStats = existingAccount.AccountStat.OrderBy(s => s.StatId).Select(s => s.StatValue).ToList(),
+            //    MediusStats = existingAccount.MediusStats,
+            //    MachineId = existingAccount.MachineId,
+            //    IsBanned = existingBan != null ? true : false,
+            //    AppId = existingAccount.AppId,
+            //};
+
+            return account2;
         }
 
         [Authorize("database")]
