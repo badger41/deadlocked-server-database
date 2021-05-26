@@ -161,6 +161,7 @@ namespace DeadlockedDatabase.Entities
                 entity.Property(e => e.LoggedIn).HasColumnName("logged_in");
 
                 entity.Property(e => e.WorldId).HasColumnName("world_id");
+                entity.Property(e => e.GameName).HasColumnName("game_name");
             });
 
             modelBuilder.Entity<Banned>(entity =>
