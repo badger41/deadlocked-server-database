@@ -360,6 +360,7 @@ namespace DeadlockedDatabase.Controllers
                 existingData.GameId = StatusData.GameId;
                 existingData.ChannelId = StatusData.ChannelId;
                 existingData.WorldId = StatusData.WorldId;
+                existingData.GameName = StatusData.GameName;
                 db.AccountStatus.Attach(existingData);
                 db.Entry(existingData).State = EntityState.Modified;
             }
@@ -378,6 +379,7 @@ namespace DeadlockedDatabase.Controllers
                 a.LoggedIn = false;
                 a.WorldId = null;
                 a.ChannelId = null;
+                a.GameName = null;
             });
 
             db.SaveChanges();
