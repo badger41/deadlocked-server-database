@@ -387,20 +387,19 @@ namespace DeadlockedDatabase.Controllers
             return Ok();
         }
 
-        [Authorize]
+        [Authorize("discord_bot")]
         [HttpGet, Route("getOnlineAccounts")]
-        public async Task<dynamic> getOnlineAccounts(int pageIndex, int pageSize)
+        public async Task<dynamic> getOnlineAccounts()
         {
             var results = db.AccountStatus
                 .Where(acs => acs.LoggedIn)
-                .Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize)
                 .Select(s => new
                 {
                     s.AccountId,
                     db.Account.FirstOrDefault(a => a.AccountId == s.AccountId).AccountName,
                     s.WorldId,
                     s.GameId,
+                    s.GameName,
                     s.ChannelId,
                 });
 
