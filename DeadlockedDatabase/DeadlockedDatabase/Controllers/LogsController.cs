@@ -24,6 +24,7 @@ namespace DeadlockedDatabase.Controllers
             db = _db;
         }
 
+        [Authorize]
         [HttpPost, Route("submitLog")]
         public async Task<dynamic> submitLog([FromBody] LogDTO LogData)
         {

@@ -21,7 +21,7 @@ namespace DeadlockedDatabase.Controllers
             db = _db;
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpGet, Route("getEULA")]
         public async Task<dynamic> getEULA(int? eulaId, DateTime? fromDt, DateTime? toDt)
         {
@@ -52,7 +52,7 @@ namespace DeadlockedDatabase.Controllers
             return eula;
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpGet, Route("deleteEULA")]
         public async Task<dynamic> deleteEULA(int id)
         {
@@ -67,7 +67,8 @@ namespace DeadlockedDatabase.Controllers
 
             return Ok("EULA Deleted");
         }
-        [Authorize]
+
+        [Authorize("database")]
         [HttpPost, Route("updateEULA")]
         public async Task<dynamic> updateEULA([FromBody] ChangeEulaDTO request)
         {
@@ -90,7 +91,8 @@ namespace DeadlockedDatabase.Controllers
 
             return Ok("EULA Changed");
         }
-        [Authorize]
+
+        [Authorize("database")]
         [HttpPost, Route("postEULA")]
         public async Task<dynamic> postEULA([FromBody] AddEulaDTO request)
         {
@@ -109,7 +111,7 @@ namespace DeadlockedDatabase.Controllers
             return Ok("EULA Added");
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpGet, Route("getAnnouncements")]
         public async Task<dynamic> getAnnouncements(int? accouncementId, DateTime? fromDt, DateTime? toDt)
         {
@@ -143,7 +145,7 @@ namespace DeadlockedDatabase.Controllers
             return announcement;
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpGet, Route("getAnnouncementsList")]
         public async Task<dynamic> getAnnouncementsList(DateTime? Dt, int TakeSize = 10)
         {
@@ -159,7 +161,8 @@ namespace DeadlockedDatabase.Controllers
 
             return announcements;
         }
-        [Authorize]
+
+        [Authorize("database")]
         [HttpGet, Route("deleteAnnouncement")]
         public async Task<dynamic> deleteAnnouncement(int id)
         {
@@ -174,7 +177,8 @@ namespace DeadlockedDatabase.Controllers
 
             return Ok("Announcement Deleted");
         }
-        [Authorize]
+
+        [Authorize("database")]
         [HttpPost, Route("updateAnnouncement")]
         public async Task<dynamic> updateAnnouncement([FromBody] ChangeAnnouncementDTO request)
         {
@@ -197,7 +201,8 @@ namespace DeadlockedDatabase.Controllers
 
             return Ok("Announcement Changed");
         }
-        [Authorize]
+
+        [Authorize("database")]
         [HttpPost, Route("postAnnouncement")]
         public async Task<dynamic> postAnnouncement([FromBody] AddAnnouncementDTO request)
         {
@@ -216,7 +221,7 @@ namespace DeadlockedDatabase.Controllers
             return Ok("Announcement Added");
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpPost, Route("postMaintenanceFlag")]
         public async Task<dynamic> postMaintenanceFlag([FromBody] MaintenanceDTO request)
         {
@@ -245,7 +250,7 @@ namespace DeadlockedDatabase.Controllers
             return Ok("Maintenance Flag Added");
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpGet, Route("getServerFlags")]
         public async Task<dynamic> getServerFlags()
         {

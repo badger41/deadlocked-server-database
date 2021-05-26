@@ -18,7 +18,8 @@ namespace DeadlockedDatabase.Controllers
         {
             db = _db;
         }
-        [Authorize]
+
+        [Authorize("database")]
         [HttpPost, Route("addBuddy")]
         public async Task<dynamic> addBuddy([FromBody] BuddyDTO buddyReq)
         {
@@ -46,7 +47,7 @@ namespace DeadlockedDatabase.Controllers
             return Ok("Buddy Added");
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpPost, Route("removeBuddy")]
         public async Task<dynamic> removeBuddy([FromBody] BuddyDTO buddyReq)
         {
@@ -62,7 +63,7 @@ namespace DeadlockedDatabase.Controllers
             return Ok("Buddy Removed");
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpPost, Route("addIgnored")]
         public async Task<dynamic> addIgnored([FromBody] IgnoredDTO ignoreReq)
         {
@@ -90,7 +91,7 @@ namespace DeadlockedDatabase.Controllers
             return Ok("Player Ignored");
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpPost, Route("removeIgnored")]
         public async Task<dynamic> removeIgnored([FromBody] IgnoredDTO ignoreReq)
         {

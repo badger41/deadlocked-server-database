@@ -60,7 +60,7 @@ namespace DeadlockedDatabase.Controllers
             return accountCount;
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpGet, Route("getAccount")]
         public async Task<dynamic> getAccount(int AccountId)
         {
@@ -369,7 +369,7 @@ namespace DeadlockedDatabase.Controllers
             return await getAccountStatus(StatusData.AccountId);
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpPost, Route("clearAccountStatuses")]
         public async Task<dynamic> clearAccountStatuses()
         {
@@ -406,7 +406,7 @@ namespace DeadlockedDatabase.Controllers
             return results;
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpPost, Route("changeAccountPassword")]
         public async Task<dynamic> changeAccountPassword([FromBody] AccountPasswordRequest PasswordRequest)
         {
@@ -431,7 +431,7 @@ namespace DeadlockedDatabase.Controllers
 
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpPost, Route("getIpIsBanned")]
         public async Task<bool> getIpIsBanned([FromBody] string IpAddress)
         {
@@ -444,7 +444,7 @@ namespace DeadlockedDatabase.Controllers
             return ban != null ? true : false;
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpPost, Route("getMacIsBanned")]
         public async Task<bool> getMacIsBanned([FromBody] string MacAddress)
         {
@@ -457,7 +457,7 @@ namespace DeadlockedDatabase.Controllers
             return ban != null ? true : false;
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpPost, Route("banIp")]
         public async Task<dynamic> banIp([FromBody] BanRequestDTO request)
         {
@@ -473,7 +473,7 @@ namespace DeadlockedDatabase.Controllers
             return Ok("Ip Banned");
         }
 
-        [Authorize]
+        [Authorize("database")]
         [HttpPost, Route("banMac")]
         public async Task<dynamic> banMac([FromBody] BanRequestDTO request)
         {
