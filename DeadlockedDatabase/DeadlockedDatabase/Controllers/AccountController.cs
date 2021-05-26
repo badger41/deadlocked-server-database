@@ -369,10 +369,17 @@ namespace DeadlockedDatabase.Controllers
         }
 
         [Authorize]
-        [HttpDelete, Route("clearAccountStatuses")]
+        [HttpPost, Route("clearAccountStatuses")]
         public async Task<dynamic> clearAccountStatuses()
         {
-            db.AccountStatus.RemoveRange(db.AccountStatus);
+            await db.AccountStatus.ForEachAsync(a =>
+            {
+                a.GameId = null;
+                a.LoggedIn = false;
+                a.WorldId = null;
+                a.ChannelId = null;
+            });
+
             db.SaveChanges();
 
             return Ok();
