@@ -19,6 +19,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
+using Renci.SshNet;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace DeadlockedDatabase
@@ -43,14 +44,36 @@ namespace DeadlockedDatabase
             services.AddDbContext<Ratchet_DeadlockedContext>((serviceProvider, dbContextBuilder) =>
             {
                 var connectionStringPlaceHolder = Configuration.GetConnectionString("DbConnection");
-                string serverName = Environment.GetEnvironmentVariable("DB_SERVER");
+                string serverName = "127.0.0.1,10094";// Environment.GetEnvironmentVariable("DB_SERVER");
                 string dbName = Environment.GetEnvironmentVariable("DB_NAME");
                 string dbUserName = Environment.GetEnvironmentVariable("DB_USER");
                 string dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
 
-
                 var connectionString = connectionStringPlaceHolder.Replace("{_SERVER}", serverName).Replace("{_DBNAME}", dbName).Replace("{_USERNAME}", dbUserName).Replace("{_PASSWORD}", dbPassword);
                 dbContextBuilder.UseSqlServer(connectionString);
+
+                //using (var client = new SshClient("s04-west.services.hashsploit.net", 22400, "badger41", "Kung_FuHustle-97")) // establishing ssh connection to server where MySql is hosted
+                //{
+                //    client.Connect();
+                //    if (client.IsConnected)
+                //    {
+                //        var portForwarded = new ForwardedPortLocal("127.0.0.1", 10094, "127.0.0.1", 10094);
+                //        client.AddForwardedPort(portForwarded);
+                //        portForwarded.Start();
+                //        using(client)
+                //        {
+                //            var connectionString = connectionStringPlaceHolder.Replace("{_SERVER}", serverName).Replace("{_DBNAME}", dbName).Replace("{_USERNAME}", dbUserName).Replace("{_PASSWORD}", dbPassword);
+                //            dbContextBuilder.UseSqlServer(connectionString);
+                //        }
+
+                //    }
+                //    else
+                //    {
+                //        Console.WriteLine("Client cannot be reached...");
+                //    }
+                //}
+
+
             });
 
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
