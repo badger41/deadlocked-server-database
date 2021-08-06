@@ -140,6 +140,7 @@ namespace DeadlockedDatabase.Controllers
                     existingGame.PlayerCount = game.PlayerCount;
                     existingGame.PlayerListCurrent = game.PlayerListCurrent;
                     existingGame.PlayerListStart = game.PlayerListStart;
+                    existingGame.PlayerSkillLevel = game.PlayerSkillLevel;
                     existingGame.GameLevel = game.GameLevel;
                     existingGame.GameName = game.GameName;
                     existingGame.RuleSet = game.RuleSet;
