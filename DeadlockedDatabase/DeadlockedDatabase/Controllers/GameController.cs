@@ -118,7 +118,7 @@ namespace DeadlockedDatabase.Controllers
                         GenericField8 = game.GenericField8,
                         WorldStatus = game.WorldStatus,
                         GameHostType = game.GameHostType,
-                        Metadata = game.Metadata,
+                        Metadata = existingGame.Metadata,
                         GameCreateDt = game.GameCreateDt,
                         GameStartDt = game.GameStartDt,
                         GameEndDt = game.GameEndDt,
@@ -153,7 +153,6 @@ namespace DeadlockedDatabase.Controllers
                     existingGame.GenericField8 = game.GenericField8;
                     existingGame.WorldStatus = game.WorldStatus;
                     existingGame.GameHostType = game.GameHostType;
-                    existingGame.Metadata = game.Metadata;
                     existingGame.GameCreateDt = game.GameCreateDt;
                     existingGame.GameStartDt = game.GameStartDt;
 
@@ -161,6 +160,27 @@ namespace DeadlockedDatabase.Controllers
 
                     return Ok();
                 }
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
+        [Authorize("database")]
+        [HttpPut, Route("updateMetaData/{gameId}")]
+        public async Task<dynamic> updateGame(int gameId, [FromBody] string MetaData)
+        {
+            var existingGame = db.Game.Where(g => g.GameId == gameId).Select(g => g).FirstOrDefault();
+
+            if (existingGame != null)
+            {
+
+                existingGame.Metadata = MetaData;
+
+                db.SaveChanges();
+
+                return Ok();
             }
             else
             {
