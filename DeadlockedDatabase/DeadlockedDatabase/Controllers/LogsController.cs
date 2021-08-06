@@ -85,6 +85,7 @@ namespace DeadlockedDatabase.Controllers
             return Problem();
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         public void RollBack()
         {
             var context = db;
