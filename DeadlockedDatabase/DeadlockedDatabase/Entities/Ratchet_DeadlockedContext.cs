@@ -26,10 +26,17 @@ namespace DeadlockedDatabase.Entities
         public virtual DbSet<DimAnnouncements> DimAnnouncements { get; set; }
         public virtual DbSet<DimEula> DimEula { get; set; }
         public virtual DbSet<DimStats> DimStats { get; set; }
+        public virtual DbSet<Game> Game { get; set; }
+        public virtual DbSet<GameHistory> GameHistory { get; set; }
         public virtual DbSet<Roles> Roles { get; set; }
         public virtual DbSet<ServerFlags> ServerFlags { get; set; }
         public virtual DbSet<ServerLog> ServerLog { get; set; }
         public virtual DbSet<UserRole> UserRole { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -158,10 +165,13 @@ namespace DeadlockedDatabase.Entities
 
                 entity.Property(e => e.GameId).HasColumnName("game_id");
 
+                entity.Property(e => e.GameName)
+                    .HasColumnName("game_name")
+                    .HasMaxLength(32);
+
                 entity.Property(e => e.LoggedIn).HasColumnName("logged_in");
 
                 entity.Property(e => e.WorldId).HasColumnName("world_id");
-                entity.Property(e => e.GameName).HasColumnName("game_name");
             });
 
             modelBuilder.Entity<Banned>(entity =>
@@ -288,6 +298,158 @@ namespace DeadlockedDatabase.Entities
                     .HasMaxLength(100);
             });
 
+            modelBuilder.Entity<Game>(entity =>
+            {
+                entity.ToTable("game", "WORLD");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.AppId).HasColumnName("app_id");
+
+                entity.Property(e => e.GameCreateDt)
+                    .HasColumnName("game_create_dt")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.GameHostType)
+                    .IsRequired()
+                    .HasColumnName("game_host_type")
+                    .HasMaxLength(32);
+
+                entity.Property(e => e.GameId).HasColumnName("game_id");
+
+                entity.Property(e => e.GameLevel).HasColumnName("game_level");
+
+                entity.Property(e => e.GameName)
+                    .IsRequired()
+                    .HasColumnName("game_name")
+                    .HasMaxLength(64);
+
+                entity.Property(e => e.GameStartDt).HasColumnName("game_start_dt");
+
+                entity.Property(e => e.GameStats)
+                    .IsRequired()
+                    .HasColumnName("game_stats")
+                    .HasMaxLength(256)
+                    .IsFixedLength();
+
+                entity.Property(e => e.GenericField1).HasColumnName("generic_field_1");
+
+                entity.Property(e => e.GenericField2).HasColumnName("generic_field_2");
+
+                entity.Property(e => e.GenericField3).HasColumnName("generic_field_3");
+
+                entity.Property(e => e.GenericField4).HasColumnName("generic_field_4");
+
+                entity.Property(e => e.GenericField5).HasColumnName("generic_field_5");
+
+                entity.Property(e => e.GenericField6).HasColumnName("generic_field_6");
+
+                entity.Property(e => e.GenericField7).HasColumnName("generic_field_7");
+
+                entity.Property(e => e.GenericField8).HasColumnName("generic_field_8");
+
+                entity.Property(e => e.MaxPlayers).HasColumnName("max_players");
+
+                entity.Property(e => e.Metadata).HasColumnName("metadata");
+
+                entity.Property(e => e.MinPlayers).HasColumnName("min_players");
+
+                entity.Property(e => e.PlayerCount).HasColumnName("player_count");
+
+                entity.Property(e => e.PlayerListCurrent)
+                    .HasColumnName("player_list_current")
+                    .HasMaxLength(250);
+
+                entity.Property(e => e.PlayerListStart)
+                    .HasColumnName("player_list_start")
+                    .HasMaxLength(250);
+
+                entity.Property(e => e.PlayerSkillLevel).HasColumnName("player_skill_level");
+
+                entity.Property(e => e.RuleSet).HasColumnName("rule_set");
+
+                entity.Property(e => e.WorldStatus)
+                    .IsRequired()
+                    .HasColumnName("world_status")
+                    .HasMaxLength(32);
+            });
+
+            modelBuilder.Entity<GameHistory>(entity =>
+            {
+                entity.ToTable("game_history", "WORLD");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.AppId).HasColumnName("app_id");
+
+                entity.Property(e => e.GameCreateDt).HasColumnName("game_create_dt");
+
+                entity.Property(e => e.GameEndDt).HasColumnName("game_end_dt");
+
+                entity.Property(e => e.GameHostType)
+                    .IsRequired()
+                    .HasColumnName("game_host_type")
+                    .HasMaxLength(32);
+
+                entity.Property(e => e.GameId).HasColumnName("game_id");
+
+                entity.Property(e => e.GameLevel).HasColumnName("game_level");
+
+                entity.Property(e => e.GameName)
+                    .IsRequired()
+                    .HasColumnName("game_name")
+                    .HasMaxLength(64);
+
+                entity.Property(e => e.GameStartDt).HasColumnName("game_start_dt");
+
+                entity.Property(e => e.GameStats)
+                    .IsRequired()
+                    .HasColumnName("game_stats")
+                    .HasMaxLength(256)
+                    .IsFixedLength();
+
+                entity.Property(e => e.GenericField1).HasColumnName("generic_field_1");
+
+                entity.Property(e => e.GenericField2).HasColumnName("generic_field_2");
+
+                entity.Property(e => e.GenericField3).HasColumnName("generic_field_3");
+
+                entity.Property(e => e.GenericField4).HasColumnName("generic_field_4");
+
+                entity.Property(e => e.GenericField5).HasColumnName("generic_field_5");
+
+                entity.Property(e => e.GenericField6).HasColumnName("generic_field_6");
+
+                entity.Property(e => e.GenericField7).HasColumnName("generic_field_7");
+
+                entity.Property(e => e.GenericField8).HasColumnName("generic_field_8");
+
+                entity.Property(e => e.MaxPlayers).HasColumnName("max_players");
+
+                entity.Property(e => e.Metadata).HasColumnName("metadata");
+
+                entity.Property(e => e.MinPlayers).HasColumnName("min_players");
+
+                entity.Property(e => e.PlayerCount).HasColumnName("player_count");
+
+                entity.Property(e => e.PlayerListCurrent)
+                    .HasColumnName("player_list_current")
+                    .HasMaxLength(250);
+
+                entity.Property(e => e.PlayerListStart)
+                    .HasColumnName("player_list_start")
+                    .HasMaxLength(250);
+
+                entity.Property(e => e.PlayerSkillLevel).HasColumnName("player_skill_level");
+
+                entity.Property(e => e.RuleSet).HasColumnName("rule_set");
+
+                entity.Property(e => e.WorldStatus)
+                    .IsRequired()
+                    .HasColumnName("world_status")
+                    .HasMaxLength(32);
+            });
+
             modelBuilder.Entity<Roles>(entity =>
             {
                 entity.HasKey(e => e.RoleId);
@@ -317,17 +479,19 @@ namespace DeadlockedDatabase.Entities
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
+                entity.Property(e => e.FromDt).HasColumnName("from_dt");
+
                 entity.Property(e => e.ServerFlag)
                     .IsRequired()
                     .HasColumnName("server_flag")
                     .HasMaxLength(50);
 
+                entity.Property(e => e.ToDt).HasColumnName("to_dt");
+
                 entity.Property(e => e.Value)
                     .IsRequired()
                     .HasColumnName("value")
                     .HasMaxLength(100);
-                entity.Property(e => e.FromDt).HasColumnName("from_dt");
-                entity.Property(e => e.ToDt).HasColumnName("to_dt");
             });
 
             modelBuilder.Entity<ServerLog>(entity =>
