@@ -189,6 +189,17 @@ namespace DeadlockedDatabase.Controllers
         }
 
         [Authorize("database")]
+        [HttpDelete, Route("clear")]
+        public async Task<dynamic> clearGames()
+        {
+            var games = db.Game.ToList();
+            db.Game.RemoveRange(games);
+            db.SaveChanges();
+
+            return Ok();
+        }
+
+        [Authorize("database")]
         [HttpDelete, Route("delete/{gameId}")]
         public async Task<dynamic> deleteGame(int gameId)
         {
