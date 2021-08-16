@@ -81,6 +81,8 @@ namespace DeadlockedDatabase.Entities
                     .HasColumnName("medius_stats")
                     .HasMaxLength(350);
 
+                entity.Property(e => e.Metadata).HasColumnName("metadata");
+
                 entity.Property(e => e.ModifiedDt).HasColumnName("modified_dt");
             });
 

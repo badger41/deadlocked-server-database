@@ -90,14 +90,7 @@ namespace DeadlockedDatabase.Controllers
                                        AccountWideStats = a.AccountStat.OrderBy(s => s.StatId).Select(s => s.StatValue).ToList(),
                                        Friends = new List<AccountRelationDTO>(),
                                        Ignored = new List<AccountRelationDTO>(),
-                                       //Friends = a.AccountFriend.Select(af => new AccountRelationDTO()
-                                       //{
-                                       //    AccountId = af.FriendAccountId,
-                                       //}).ToList(),
-                                       //Ignored = a.AccountIgnored.Select(ai => new AccountRelationDTO()
-                                       //{
-                                       //    AccountId = ai.IgnoredAccountId,
-                                       //}).ToList(),
+                                       Metadata = existingAccount.Metadata,
                                        MediusStats = existingAccount.MediusStats,
                                        MachineId = existingAccount.MachineId,
                                        IsBanned = existingBan != null ? true : false,
@@ -123,40 +116,18 @@ namespace DeadlockedDatabase.Controllers
                 };
                 account2.Friends.Add(friendDTO);
             }
-            //foreach (AccountRelationDTO ignored in account2.Ignored)
-            //{
-            //    ignored.AccountName = accountList.Where(a => a.AccountId == ignored.AccountId).Select(a => a.AccountName).FirstOrDefault();
-            //}
-
-            //AccountDTO account = new AccountDTO()
-            //{
-            //    AccountId = existingAccount.AccountId,
-            //    AccountName = existingAccount.AccountName,
-            //    AccountPassword = existingAccount.AccountPassword,
-            //    //Friends = (from f in existingAccount.AccountFriend
-            //    //           join a in db.Account
-            //    //            on f.FriendAccountId equals a.AccountId
-            //    //           select new AccountRelationDTO
-            //    //           {
-            //    //               AccountId = f.FriendAccountId,
-            //    //               AccountName = a.AccountName
-            //    //           }).ToList(),
-            //    //Ignored = (from f in existingAccount.AccountIgnored
-            //    //            join a in db.Account
-            //    //            on f.IgnoredAccountId equals a.AccountId
-            //    //           select new AccountRelationDTO
-            //    //           {
-            //    //               AccountId = f.IgnoredAccountId,
-            //    //               AccountName = a.AccountName
-            //    //           }).ToList(),
-            //    AccountWideStats = existingAccount.AccountStat.OrderBy(s => s.StatId).Select(s => s.StatValue).ToList(),
-            //    MediusStats = existingAccount.MediusStats,
-            //    MachineId = existingAccount.MachineId,
-            //    IsBanned = existingBan != null ? true : false,
-            //    AppId = existingAccount.AppId,
-            //};
 
             return account2;
+        }
+
+        [Authorize]
+        [HttpGet, Route("getAccountMetadata")]
+        public async Task<string> getAccountMetadata(int AccountId)
+        {
+            string metadata = (from a in db.Account
+                           where a.AccountId == AccountId
+                           select a.Metadata).FirstOrDefault();
+            return metadata;
         }
 
         [Authorize("database")]
@@ -332,6 +303,21 @@ namespace DeadlockedDatabase.Controllers
                 return NotFound();
 
             existingAccount.LastSignInIp = IpAddress;
+            db.Account.Attach(existingAccount);
+            db.Entry(existingAccount).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            db.SaveChanges();
+            return Ok();
+        }
+
+        [Authorize("database")]
+        [HttpPost, Route("postAccountMetadata")]
+        public async Task<dynamic> postAccountMetadata([FromBody] string Metadata, int AccountId)
+        {
+            Account existingAccount = db.Account.Where(a => a.AccountId == AccountId).FirstOrDefault();
+            if (existingAccount == null)
+                return NotFound();
+
+            existingAccount.Metadata = Metadata;
             db.Account.Attach(existingAccount);
             db.Entry(existingAccount).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
             db.SaveChanges();
