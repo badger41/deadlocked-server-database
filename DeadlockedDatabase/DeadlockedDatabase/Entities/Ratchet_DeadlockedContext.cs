@@ -23,6 +23,11 @@ namespace DeadlockedDatabase.Entities
         public virtual DbSet<Banned> Banned { get; set; }
         public virtual DbSet<BannedIp> BannedIp { get; set; }
         public virtual DbSet<BannedMac> BannedMac { get; set; }
+        public virtual DbSet<Clan> Clan { get; set; }
+        public virtual DbSet<ClanInvitation> ClanInvitation { get; set; }
+        public virtual DbSet<ClanMember> ClanMember { get; set; }
+        public virtual DbSet<ClanMessage> ClanMessage { get; set; }
+        public virtual DbSet<ClanStat> ClanStat { get; set; }
         public virtual DbSet<DimAnnouncements> DimAnnouncements { get; set; }
         public virtual DbSet<DimEula> DimEula { get; set; }
         public virtual DbSet<DimStats> DimStats { get; set; }
@@ -32,11 +37,6 @@ namespace DeadlockedDatabase.Entities
         public virtual DbSet<ServerFlags> ServerFlags { get; set; }
         public virtual DbSet<ServerLog> ServerLog { get; set; }
         public virtual DbSet<UserRole> UserRole { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -225,6 +225,187 @@ namespace DeadlockedDatabase.Entities
                     .HasMaxLength(50);
 
                 entity.Property(e => e.ToDt).HasColumnName("to_dt");
+            });
+
+            modelBuilder.Entity<Clan>(entity =>
+            {
+                entity.ToTable("clan", "CLANS");
+
+                entity.Property(e => e.ClanId).HasColumnName("clan_id");
+
+                entity.Property(e => e.AppId).HasColumnName("app_id");
+
+                entity.Property(e => e.ClanLeaderAccountId).HasColumnName("clan_leader_account_id");
+
+                entity.Property(e => e.ClanName)
+                    .IsRequired()
+                    .HasColumnName("clan_name")
+                    .HasMaxLength(32);
+
+                entity.Property(e => e.CreateDt)
+                    .HasColumnName("create_dt")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+
+                entity.Property(e => e.IsActive)
+                    .IsRequired()
+                    .HasColumnName("is_active")
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.MediusStats)
+                    .HasColumnName("medius_stats")
+                    .HasMaxLength(350);
+
+                entity.Property(e => e.ModifiedBy).HasColumnName("modified_by");
+
+                entity.Property(e => e.ModifiedDt).HasColumnName("modified_dt");
+
+                entity.HasOne(d => d.ClanLeaderAccount)
+                    .WithMany(p => p.Clan)
+                    .HasForeignKey(d => d.ClanLeaderAccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_clan_account");
+            });
+
+            modelBuilder.Entity<ClanInvitation>(entity =>
+            {
+                entity.ToTable("clan_invitation", "CLANS");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.AccountId).HasColumnName("account_id");
+
+                entity.Property(e => e.ClanId).HasColumnName("clan_id");
+
+                entity.Property(e => e.CreateDt)
+                    .HasColumnName("create_dt")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+
+                entity.Property(e => e.IsActive)
+                    .IsRequired()
+                    .HasColumnName("is_active")
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.ModifiedBy).HasColumnName("modified_by");
+
+                entity.Property(e => e.ModifiedDt).HasColumnName("modified_dt");
+
+                entity.Property(e => e.ResponseDt).HasColumnName("response_dt");
+
+                entity.Property(e => e.ResponseId).HasColumnName("response_id");
+
+                entity.Property(e => e.ResponseMsg)
+                    .HasColumnName("response_msg")
+                    .HasMaxLength(50);
+
+                entity.HasOne(d => d.Account)
+                    .WithMany(p => p.ClanInvitation)
+                    .HasForeignKey(d => d.AccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_clan_invitation_account");
+
+                entity.HasOne(d => d.Clan)
+                    .WithMany(p => p.ClanInvitation)
+                    .HasForeignKey(d => d.ClanId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_clan_invitation_clan");
+            });
+
+            modelBuilder.Entity<ClanMember>(entity =>
+            {
+                entity.ToTable("clan_member", "CLANS");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.AccountId).HasColumnName("account_id");
+
+                entity.Property(e => e.ClanId).HasColumnName("clan_id");
+
+                entity.Property(e => e.CreateDt)
+                    .HasColumnName("create_dt")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.IsActive)
+                    .IsRequired()
+                    .HasColumnName("is_active")
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.ModifiedBy).HasColumnName("modified_by");
+
+                entity.Property(e => e.ModifiedDt).HasColumnName("modified_dt");
+
+                entity.HasOne(d => d.Account)
+                    .WithMany(p => p.ClanMember)
+                    .HasForeignKey(d => d.AccountId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_clan_member_account");
+
+                entity.HasOne(d => d.Clan)
+                    .WithMany(p => p.ClanMember)
+                    .HasForeignKey(d => d.ClanId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_clan_member_clan");
+            });
+
+            modelBuilder.Entity<ClanMessage>(entity =>
+            {
+                entity.ToTable("clan_message", "CLANS");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.ClanId).HasColumnName("clan_id");
+
+                entity.Property(e => e.CreateDt)
+                    .HasColumnName("create_dt")
+                    .HasDefaultValueSql("(getutcdate())");
+
+                entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+
+                entity.Property(e => e.IsActive)
+                    .IsRequired()
+                    .HasColumnName("is_active")
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.Message)
+                    .IsRequired()
+                    .HasColumnName("message")
+                    .HasMaxLength(200);
+
+                entity.HasOne(d => d.Clan)
+                    .WithMany(p => p.ClanMessage)
+                    .HasForeignKey(d => d.ClanId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_clan_message_clan");
+            });
+
+            modelBuilder.Entity<ClanStat>(entity =>
+            {
+                entity.ToTable("clan_stat", "STATS");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.ClanId).HasColumnName("clan_id");
+
+                entity.Property(e => e.ModifiedDt).HasColumnName("modified_dt");
+
+                entity.Property(e => e.StatId).HasColumnName("stat_id");
+
+                entity.Property(e => e.StatValue).HasColumnName("stat_value");
+
+                entity.HasOne(d => d.Clan)
+                    .WithMany(p => p.ClanStat)
+                    .HasForeignKey(d => d.ClanId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_clan_stat_clan");
+
+                entity.HasOne(d => d.Stat)
+                    .WithMany(p => p.ClanStat)
+                    .HasForeignKey(d => d.StatId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_clan_stat_dim_stats");
             });
 
             modelBuilder.Entity<DimAnnouncements>(entity =>
