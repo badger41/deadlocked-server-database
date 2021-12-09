@@ -312,6 +312,10 @@ namespace DeadlockedDatabase.Entities
                     .HasForeignKey(d => d.ClanId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_clan_invitation_clan");
+
+                entity.Property(e => e.InviteMsg)
+                        .HasColumnName("invite_msg")
+                        .HasMaxLength(512);
             });
 
             modelBuilder.Entity<ClanMember>(entity =>
