@@ -365,7 +365,8 @@ namespace DeadlockedDatabase.Controllers
 
             target.Message = req.Message;
 
-            db.ClanMessage.Update(target);
+            db.ClanMessage.Attach(target);
+            db.Entry(target).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
             db.SaveChanges();
 
             return Ok();
