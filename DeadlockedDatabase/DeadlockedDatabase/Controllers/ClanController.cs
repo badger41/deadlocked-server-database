@@ -250,7 +250,7 @@ namespace DeadlockedDatabase.Controllers
         {
             ClanService cs = new ClanService();
 
-            var invites = db.ClanInvitation.Where(ci => ci.AccountId == accountId && ci.ResponseId == 0)
+            var invites = db.ClanInvitation.Where(ci => ci.AccountId == accountId && ci.ResponseId == 0 && ci.IsActive == true)
                                             .Include(ci => ci.Clan)
                                             .ThenInclude(c => c.ClanLeaderAccount)
                                             .Include(ci => ci.Account)
