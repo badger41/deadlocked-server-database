@@ -57,9 +57,9 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpGet, Route("searchClanByName")]
-        public async Task<dynamic> searchClanByName(string clanName)
+        public async Task<dynamic> searchClanByName(string clanName, int appId)
         {
-            int clanId = db.Clan.Where(c => c.IsActive == true && c.ClanName == clanName).Select(c => c.ClanId).FirstOrDefault();
+            int clanId = db.Clan.Where(c => c.IsActive == true && c.AppId == appId && c.ClanName.ToLower() == clanName.ToLower()).Select(c => c.ClanId).FirstOrDefault();
 
             if (clanId != 0)
             {
@@ -71,8 +71,14 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpPost, Route("createClan")]
-        public async Task<ClanDTO> createClan(int accountId, string clanName, int appId)
+        public async Task<dynamic> createClan(int accountId, string clanName, int appId)
         {
+            // verify not already in clan
+            var member = db.ClanMember.Where(c => c.IsActive == true && c.AccountId == accountId && c.Clan.AppId == appId)
+                .FirstOrDefault();
+            if (member != null)
+                return BadRequest();
+
             Clan newClan = new Clan()
             {
                 ClanLeaderAccountId = accountId,
@@ -115,25 +121,26 @@ namespace DeadlockedDatabase.Controllers
                                     .Include(c => c.ClanInvitation)
                                     .FirstOrDefault();
 
-            if (target != null)
+            // not found
+            if (target == null)
+                return NotFound();
+
+            target.IsActive = false;
+            target.ModifiedBy = accountId;
+            target.ModifiedDt = now;
+            target.ClanMember.ToList().ForEach(cm =>
             {
-                target.IsActive = false;
-                target.ModifiedBy = accountId;
-                target.ModifiedDt = now;
-                target.ClanMember.ToList().ForEach(cm =>
-                {
-                    cm.IsActive = false;
-                    cm.ModifiedBy = accountId;
-                    cm.ModifiedDt = now;
-                });
-                target.ClanInvitation.ToList().ForEach(ci =>
-                {
-                    ci.IsActive = false;
-                    ci.ModifiedBy = accountId;
-                    ci.ModifiedDt = now;
-                });
-                db.SaveChanges();
-            }
+                cm.IsActive = false;
+                cm.ModifiedBy = accountId;
+                cm.ModifiedDt = now;
+            });
+            target.ClanInvitation.ToList().ForEach(ci =>
+            {
+                ci.IsActive = false;
+                ci.ModifiedBy = accountId;
+                ci.ModifiedDt = now;
+            });
+            db.SaveChanges();
 
             return Ok();
         }
@@ -143,14 +150,16 @@ namespace DeadlockedDatabase.Controllers
         public async Task<dynamic> transferLeadership([FromBody] ClanTransferLeadershipDTO req) 
         {
             DateTime now = DateTime.UtcNow;
-            var target = (from c in db.Clan where c.ClanId == req.ClanId select c).FirstOrDefault();
+            var target = (from c in db.Clan where c.ClanId == req.ClanId && c.ClanLeaderAccountId == req.AccountId select c).FirstOrDefault();
+
+            if (target == null)
+                return NotFound();
 
             target.ClanLeaderAccountId = req.NewLeaderAccountId;
             target.ModifiedBy = req.AccountId;
             target.ModifiedDt = now;
 
             await db.SaveChangesAsync();
-
             return Ok();
         }
 
@@ -160,6 +169,15 @@ namespace DeadlockedDatabase.Controllers
         {
             Clan target = db.Clan.Where(c => c.ClanId == req.ClanId && c.ClanLeaderAccountId == accountId)
                                     .FirstOrDefault();
+
+            var existingInvitation = db.ClanInvitation.Where(c => c.ClanId == req.ClanId && c.IsActive == true && c.AccountId == accountId)
+                                    .FirstOrDefault();
+
+            // prevent inviting someone twice
+            if (existingInvitation != null)
+            {
+                return BadRequest();
+            }
 
             if (target != null)
             {
@@ -203,10 +221,28 @@ namespace DeadlockedDatabase.Controllers
         public async Task<dynamic> respondInvitation([FromBody] ClanInvitationResponseDTO req)
         {
             DateTime now = DateTime.UtcNow;
-            var target = (from ci in db.ClanInvitation where ci.Id == req.InvitationId select ci).FirstOrDefault();
+            var target = (from ci in db.ClanInvitation where ci.Id == req.InvitationId && ci.AccountId == req.AccountId select ci).FirstOrDefault();
 
             if(target != null)
             {
+                // client accepted invitation
+                if (req.Response == 1 && target.IsActive == true)
+                {
+                    Clan clan = db.Clan.Where(c => c.ClanId == target.ClanId)
+                                    .Include(c => c.ClanMember)
+                                    .Include(c => c.ClanInvitation)
+                                   .FirstOrDefault();
+                    
+                    if (clan != null)
+                    {
+                        clan.ClanMember.Add(new ClanMember()
+                        {
+                            ClanId = target.ClanId,
+                            AccountId = target.AccountId,
+                        });
+                    }
+                }
+
                 target.ResponseDt = now;
                 target.ResponseMsg = req.ResponseMessage;
                 target.ResponseId = req.Response;
