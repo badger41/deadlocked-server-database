@@ -214,6 +214,21 @@ namespace DeadlockedDatabase.Controllers
         }
 
         [Authorize("database")]
+        [HttpPost, Route("postClanMediusStats")]
+        public async Task<dynamic> postClanMediusStats([FromBody] string StatsString, int ClanId)
+        {
+            Clan existingClan = db.Clan.Where(a => a.ClanId == ClanId).FirstOrDefault();
+            if (existingClan == null)
+                return NotFound();
+
+            existingClan.MediusStats = StatsString;
+            db.Clan.Attach(existingClan);
+            db.Entry(existingClan).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            db.SaveChanges();
+            return Ok();
+        }
+
+        [Authorize("database")]
         [HttpGet, Route("invitations")]
         public async Task<dynamic> getInvitesByAccountId(int accountId)
         {
