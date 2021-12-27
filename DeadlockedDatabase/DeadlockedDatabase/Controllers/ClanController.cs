@@ -160,6 +160,22 @@ namespace DeadlockedDatabase.Controllers
         }
 
         [Authorize("database")]
+        [HttpGet, Route("leaveClan")]
+        public async Task<dynamic> leaveClan(int accountId, int clanId)
+        {
+            DateTime now = DateTime.UtcNow;
+            ClanMember target = db.ClanMember.Where(cm => cm.AccountId == accountId && cm.ClanId == clanId && cm.IsActive == true).FirstOrDefault();
+
+            target.IsActive = false;
+            target.ModifiedDt = now;
+            target.ModifiedBy = accountId;
+
+            db.SaveChanges();
+
+            return Ok();
+        }
+
+        [Authorize("database")]
         [HttpPost, Route("transferLeadership")]
         public async Task<dynamic> transferLeadership([FromBody] ClanTransferLeadershipDTO req) 
         {
@@ -295,6 +311,7 @@ namespace DeadlockedDatabase.Controllers
 
             if (target != null)
             {
+                target.ResponseId = 3;
                 target.ResponseDt = now;
                 target.InviteMsg = "Invitation Revoked";
                 target.IsActive = false;
