@@ -20,9 +20,26 @@ namespace DeadlockedDatabase.DTO
         public int TotalRankedAccounts { get; set; }
     }
 
+    public class ClanLeaderboardDTO
+    {
+        public int StartIndex { get; set; }
+        public int Index { get; set; }
+        public int ClanId { get; set; }
+        public string ClanName { get; set; }
+        public int StatValue { get; set; }
+        public string MediusStats { get; set; }
+        public int TotalRankedClans { get; set; }
+    }
+
     public class StatPostDTO
     {
         public int AccountId { get; set; }
+        public List<int> stats { get; set; }
+    }
+
+    public class ClanStatPostDTO
+    {
+        public int ClanId { get; set; }
         public List<int> stats { get; set; }
     }
 }

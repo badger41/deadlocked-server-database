@@ -74,6 +74,31 @@ namespace DeadlockedDatabase.Controllers
         }
 
         [Authorize]
+        [HttpGet, Route("getClanLeaderboardIndex")]
+        public async Task<dynamic> getClanLeaderboardIndex(int ClanId, int StatId)
+        {
+            List<ClanStat> stats = db.ClanStat.Where(s => s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.ClanId).ToList();
+            ClanStat statForClan = stats.Where(s => s.ClanId == ClanId).FirstOrDefault();
+            Clan clan = db.Clan.Where(a => a.ClanId == ClanId).FirstOrDefault();
+            ClanController cc = new ClanController(db, authService);
+            int totalClans = await cc.getActiveClanCountByAppId((int)clan.AppId);
+            if (clan.IsActive == true)
+            {
+                return new ClanLeaderboardDTO()
+                {
+                    TotalRankedClans = totalClans,
+                    ClanId = ClanId,
+                    Index = stats.IndexOf(statForClan),
+                    StartIndex = stats.IndexOf(statForClan),
+                    StatValue = statForClan.StatValue,
+                    ClanName = clan.ClanName,
+                    MediusStats = clan.MediusStats
+                };
+            }
+            return StatusCode(400, $"Clan {ClanId} is inactive.");
+        }
+
+        [Authorize]
         [HttpGet, Route("getLeaderboard")]
         public async Task<List<LeaderboardDTO>> getLeaderboard(int StatId, int StartIndex, int Size)
         {
@@ -92,6 +117,29 @@ namespace DeadlockedDatabase.Controllers
                                               AccountName = a.AccountName,
                                               StatValue = s.StatValue,
                                               MediusStats = a.MediusStats
+                                          }).ToList();
+
+            return board;
+        }
+
+        [Authorize]
+        [HttpGet, Route("getClanLeaderboard")]
+        public async Task<List<ClanLeaderboardDTO>> getClanLeaderboard(int StatId, int StartIndex, int Size)
+        {
+            List<ClanStat> stats = db.ClanStat.Where(s => s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.ClanId).Skip(StartIndex).Take(Size).ToList();
+
+            List<ClanLeaderboardDTO> board = (from s in stats
+                                          join c in db.Clan
+                                            on s.ClanId equals c.ClanId
+                                          select new ClanLeaderboardDTO()
+                                          {
+                                              TotalRankedClans = 0,
+                                              StartIndex = StartIndex,
+                                              Index = StartIndex + stats.IndexOf(s),
+                                              ClanId = s.ClanId,
+                                              ClanName = c.ClanName,
+                                              StatValue = s.StatValue,
+                                              MediusStats = c.MediusStats
                                           }).ToList();
 
             return board;
@@ -123,5 +171,33 @@ namespace DeadlockedDatabase.Controllers
             return Ok();
 
         }
+
+        [Authorize("database")]
+        [HttpPost, Route("postClanStats")]
+        public async Task<dynamic> postClanStats([FromBody] ClanStatPostDTO statData)
+        {
+            DateTime modifiedDt = DateTime.UtcNow;
+            List<ClanStat> clanStats = db.ClanStat.Where(s => s.ClanId == statData.ClanId).OrderBy(s => s.StatId).Select(s => s).ToList();
+
+            int badStats = clanStats.Where(s => s.StatValue < 0).Count();
+            if (badStats > 0)
+                return BadRequest("Found a negative stat in array. Can't have those!");
+
+            foreach (ClanStat cStat in clanStats)
+            {
+
+                int newValue = statData.stats[cStat.StatId - 1];
+                cStat.ModifiedDt = modifiedDt;
+                cStat.StatValue = newValue;
+
+                db.ClanStat.Attach(cStat);
+                db.Entry(cStat).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+            }
+
+            db.SaveChanges();
+            return Ok();
+
+        }
+
     }
 }

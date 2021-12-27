@@ -18,6 +18,7 @@ namespace DeadlockedDatabase.DTO
         public string MachineId { get; set; }
         public bool IsBanned { get; set; }
         public int? AppId { get; set; }
+        public int? ClanId { get; set; }
         public string Metadata { get; set; }
     }
 

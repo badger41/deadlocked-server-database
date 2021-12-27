@@ -65,7 +65,7 @@ namespace DeadlockedDatabase.Controllers
         public async Task<dynamic> getAccount(int AccountId)
         {
             DateTime now = DateTime.UtcNow;
-            Account existingAccount = db.Account.Where(a => a.AccountId == AccountId).FirstOrDefault();
+            Account existingAccount = db.Account.Include(a => a.ClanMember).Where(a => a.AccountId == AccountId).FirstOrDefault();
             //Account existingAccount = db.Account//.Include(a => a.AccountFriend)
             //                                    //.Include(a => a.AccountIgnored)
             //                                    .Include(a => a.AccountStat)
@@ -98,6 +98,9 @@ namespace DeadlockedDatabase.Controllers
                                    }).FirstOrDefault();
             List<int> friendIds = db.AccountFriend.Where(a => a.AccountId == AccountId).Select(a => a.FriendAccountId).ToList();
             List<int> ignoredIds = db.AccountIgnored.Where(a => a.AccountId == AccountId).Select(a => a.IgnoredAccountId).ToList();
+
+            account2.ClanId = existingAccount.ClanMember.Where(cm => cm.IsActive == true).FirstOrDefault()?.ClanId;
+
             foreach (int friendId in friendIds)
             {
                 AccountRelationDTO friendDTO = new AccountRelationDTO()

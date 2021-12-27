@@ -17,9 +17,22 @@ namespace DeadlockedDatabase.Controllers
     public class ClanController : ControllerBase
     {
         private Ratchet_DeadlockedContext db;
-        public ClanController(Ratchet_DeadlockedContext _db)
+        private IAuthService authService;
+        public ClanController(Ratchet_DeadlockedContext _db, IAuthService _authService)
         {
             db = _db;
+            authService = _authService;
+        }
+
+        [Authorize]
+        [HttpGet, Route("getActiveClanCountByAppId")]
+        public async Task<int> getActiveClanCountByAppId(int AppId)
+        {
+            int accountCount = (from c in db.Clan
+                                where c.AppId == AppId
+                                && c.IsActive == true
+                                select c).Count();
+            return accountCount;
         }
 
         [Authorize("database")]
