@@ -12,7 +12,7 @@ using DeadlockedDatabase.Services;
 
 namespace DeadlockedDatabase.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class ClanController : ControllerBase
     {
@@ -24,7 +24,7 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpGet, Route("getClan")]
-        public async Task<ClanDTO> getClan(int ClanId)
+        public async Task<ClanDTO> getClan(int clanId)
         {
             AccountService aServ = new AccountService();
             ClanService cs = new ClanService();
@@ -36,7 +36,7 @@ namespace DeadlockedDatabase.Controllers
                            .Include(c => c.ClanLeaderAccount)
                            .Include(c => c.ClanInvitation)
                            .ThenInclude(ci => ci.Account)
-                         where c.ClanId == ClanId
+                         where c.ClanId == clanId
                          select c).FirstOrDefault();
 
             ClanDTO response = new ClanDTO()
@@ -57,9 +57,9 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpGet, Route("searchClanByName")]
-        public async Task<dynamic> searchClanByName(string ClanName)
+        public async Task<dynamic> searchClanByName(string clanName)
         {
-            int clanId = db.Clan.Where(c => c.IsActive == true && c.ClanName == ClanName).Select(c => c.ClanId).FirstOrDefault();
+            int clanId = db.Clan.Where(c => c.IsActive == true && c.ClanName == clanName).Select(c => c.ClanId).FirstOrDefault();
 
             if (clanId != 0)
             {
@@ -71,13 +71,13 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpPost, Route("createClan")]
-        public async Task<ClanDTO> createClan(int accountId, string clanName)
+        public async Task<ClanDTO> createClan(int accountId, string clanName, int appId)
         {
             Clan newClan = new Clan()
             {
                 ClanLeaderAccountId = accountId,
                 ClanName = clanName,
-                AppId = 11184,
+                AppId = appId,
                 CreatedBy = accountId,
             };
             db.Clan.Add(newClan);
@@ -110,7 +110,7 @@ namespace DeadlockedDatabase.Controllers
         public async Task<dynamic> deleteClan(int accountId, int clanId)
         {
             DateTime now = DateTime.UtcNow;
-            Clan target = db.Clan.Where(c => c.ClanId == clanId)
+            Clan target = db.Clan.Where(c => c.ClanId == clanId && c.ClanLeaderAccountId == accountId)
                                     .Include(c => c.ClanMember)
                                     .Include(c => c.ClanInvitation)
                                     .FirstOrDefault();
@@ -140,7 +140,7 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpPost, Route("transferLeadership")]
-        public async Task<dynamic> transferLeadership(ClanTransferLeadershipDTO req) 
+        public async Task<dynamic> transferLeadership([FromBody] ClanTransferLeadershipDTO req) 
         {
             DateTime now = DateTime.UtcNow;
             var target = (from c in db.Clan where c.ClanId == req.ClanId select c).FirstOrDefault();
@@ -156,30 +156,38 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpPost, Route("createInvitation")]
-        public async Task<dynamic> createInvitation(ClanInvitationDTO req)
+        public async Task<dynamic> createInvitation(int accountId, [FromBody] ClanInvitationDTO req)
         {
-            DateTime now = DateTime.UtcNow;
-            ClanInvitation invite = new ClanInvitation()
-            {
-                ClanId = req.ClanId,
-                AccountId = req.TargetAccountId,
-                InviteMsg = req.Message,
-                ResponseId = 0,
-                IsActive = true,
-            };
-            db.ClanInvitation.Add(invite);
-            db.SaveChanges();
+            Clan target = db.Clan.Where(c => c.ClanId == req.ClanId && c.ClanLeaderAccountId == accountId)
+                                    .FirstOrDefault();
 
-            return Ok();
+            if (target != null)
+            {
+                DateTime now = DateTime.UtcNow;
+                ClanInvitation invite = new ClanInvitation()
+                {
+                    ClanId = req.ClanId,
+                    AccountId = req.TargetAccountId,
+                    InviteMsg = req.Message,
+                    ResponseId = 0,
+                    IsActive = true,
+                };
+                db.ClanInvitation.Add(invite);
+                db.SaveChanges();
+
+                return Ok();
+            }
+
+            return this.ValidationProblem();
         }
 
         [Authorize("database")]
         [HttpGet, Route("invitations")]
-        public async Task<dynamic> getInvitesByAccountId(int AccountId)
+        public async Task<dynamic> getInvitesByAccountId(int accountId)
         {
             ClanService cs = new ClanService();
 
-            var invites = db.ClanInvitation.Where(ci => ci.AccountId == AccountId && ci.ResponseId == 0)
+            var invites = db.ClanInvitation.Where(ci => ci.AccountId == accountId && ci.ResponseId == 0)
                                             .Include(ci => ci.Clan)
                                             .ThenInclude(c => c.ClanLeaderAccount)
                                             .Include(ci => ci.Account)
@@ -192,7 +200,7 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpPost, Route("respondInvitation")]
-        public async Task<dynamic> respondInvitation(ClanInvitationResponseDTO req)
+        public async Task<dynamic> respondInvitation([FromBody] ClanInvitationResponseDTO req)
         {
             DateTime now = DateTime.UtcNow;
             var target = (from ci in db.ClanInvitation where ci.Id == req.InvitationId select ci).FirstOrDefault();
@@ -215,17 +223,17 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpPost, Route("revokeInvitation")]
-        public async Task<dynamic> revokeInvitation(int FromAccountId, int ClanId, int TargetAccountId)
+        public async Task<dynamic> revokeInvitation(int fromAccountId, int clanId, int targetAccountId)
         {
             DateTime now = DateTime.UtcNow;
-            var target = (from ci in db.ClanInvitation where ci.AccountId == TargetAccountId && ci.ClanId == ClanId select ci).FirstOrDefault();
+            var target = (from ci in db.ClanInvitation where ci.AccountId == targetAccountId && ci.ClanId == clanId select ci).FirstOrDefault();
 
             if (target != null)
             {
                 target.ResponseDt = now;
                 target.InviteMsg = "Invitation Revoked";
                 target.IsActive = false;
-                target.ModifiedBy = FromAccountId;
+                target.ModifiedBy = fromAccountId;
                 target.ModifiedDt = now;
 
                 db.SaveChanges();
@@ -237,11 +245,11 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpGet, Route("messages")]
-        public async Task<dynamic> getClanMessages(int AccountId, int ClanId, int start, int pageSize)
+        public async Task<dynamic> getClanMessages(int accountId, int clanId, int start, int pageSize)
         {
             ClanService cs = new ClanService();
 
-            int totalMessages = db.ClanMessage.Where(cm => cm.ClanId == ClanId && cm.IsActive == true).Count();
+            int totalMessages = db.ClanMessage.Where(cm => cm.ClanId == clanId && cm.IsActive == true).Count();
 
             int totalPages = (int) Math.Ceiling((decimal) totalMessages / pageSize);
 
@@ -249,7 +257,7 @@ namespace DeadlockedDatabase.Controllers
             {
                 var skip = start * pageSize;
 
-                var result = db.ClanMessage.Where(cm => cm.ClanId == ClanId && cm.IsActive == true)
+                var result = db.ClanMessage.Where(cm => cm.ClanId == clanId && cm.IsActive == true)
                                             .Skip(skip)
                                             .Take(pageSize)
                                             .Select(cm => cs.toClanMessageDTO(cm))
@@ -264,17 +272,35 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpPost, Route("addMessage")]
-        public async Task<dynamic> createClanMessage(int AccountId, int ClanId, [FromBody] ClanMessageDTO req)
+        public async Task<dynamic> createClanMessage(int accountId, int clanId, [FromBody] ClanMessageDTO req)
         {
             ClanMessage newMessage = new ClanMessage()
             {
-                ClanId = ClanId,
+                ClanId = clanId,
                 Message = req.Message,
-                CreatedBy = AccountId,
+                CreatedBy = accountId,
                 IsActive = true,
             };
 
             db.ClanMessage.Add(newMessage);
+            db.SaveChanges();
+
+            return Ok();
+        }
+
+        [Authorize("database")]
+        [HttpPut, Route("editMessage")]
+        public async Task<dynamic> editClanMessage(int accountId, int clanId, [FromBody] ClanMessageDTO req)
+        {
+            var target = db.ClanMessage.Where(c => c.ClanId == clanId && c.Id == req.Id)
+                .FirstOrDefault();
+
+            if (target == null)
+                return NotFound();
+
+            target.Message = req.Message;
+
+            db.ClanMessage.Update(target);
             db.SaveChanges();
 
             return Ok();
