@@ -23,6 +23,7 @@ namespace DeadlockedDatabase.Services
         {
             return new ClanInvitationDTO()
             {
+                InvitationId = invite.Id,
                 ClanId = invite.ClanId,
                 ClanName = invite.Clan.ClanName,
                 TargetAccountId = invite.AccountId,
