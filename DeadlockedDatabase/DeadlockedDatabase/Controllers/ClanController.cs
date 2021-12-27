@@ -84,7 +84,7 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpPost, Route("createClan")]
-        public async Task<dynamic> createClan(int accountId, string clanName, int appId)
+        public async Task<dynamic> createClan(int accountId, string clanName, int appId, string mediusStats)
         {
             // verify not already in clan
             var member = db.ClanMember.Where(c => c.IsActive == true && c.AccountId == accountId && c.Clan.AppId == appId)
@@ -98,6 +98,7 @@ namespace DeadlockedDatabase.Controllers
                 ClanName = clanName,
                 AppId = appId,
                 CreatedBy = accountId,
+                MediusStats = mediusStats
             };
             db.Clan.Add(newClan);
             db.SaveChanges();
