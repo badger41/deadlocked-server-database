@@ -102,12 +102,13 @@ namespace DeadlockedDatabase.Controllers
         [HttpGet, Route("getLeaderboard")]
         public async Task<List<LeaderboardDTO>> getLeaderboard(int StatId, int StartIndex, int Size)
         {
-            List<AccountStat> stats = db.AccountStat.Where(s => s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.AccountId).Skip(StartIndex).Take(Size).ToList();
+            List<AccountStat> stats = db.AccountStat.Where(s => s.Account.IsActive == true && s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.AccountId).Skip(StartIndex).Take(Size).ToList();
             AccountController ac = new AccountController(db, authService);
 
             List<LeaderboardDTO> board = (from s in stats
                                           join a in db.Account
                                             on s.AccountId equals a.AccountId
+                                          where a.IsActive == true
                                           select new LeaderboardDTO()
                                           {
                                               TotalRankedAccounts = 0,
@@ -126,11 +127,12 @@ namespace DeadlockedDatabase.Controllers
         [HttpGet, Route("getClanLeaderboard")]
         public async Task<List<ClanLeaderboardDTO>> getClanLeaderboard(int StatId, int StartIndex, int Size)
         {
-            List<ClanStat> stats = db.ClanStat.Where(s => s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.ClanId).Skip(StartIndex).Take(Size).ToList();
+            List<ClanStat> stats = db.ClanStat.Where(s => s.Clan.IsActive == true && s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.ClanId).Skip(StartIndex).Take(Size).ToList();
 
             List<ClanLeaderboardDTO> board = (from s in stats
                                           join c in db.Clan
                                             on s.ClanId equals c.ClanId
+                                            where c.IsActive == true
                                           select new ClanLeaderboardDTO()
                                           {
                                               TotalRankedClans = 0,
