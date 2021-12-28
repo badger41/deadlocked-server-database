@@ -147,7 +147,7 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpGet, Route("getAnnouncementsList")]
-        public async Task<dynamic> getAnnouncementsList(DateTime? Dt, int TakeSize = 10, int AppId)
+        public async Task<dynamic> getAnnouncementsList(int AppId, DateTime? Dt, int TakeSize = 10)
         {
             dynamic announcements = null;
             if (Dt == null)
