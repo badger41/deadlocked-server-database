@@ -52,7 +52,7 @@ namespace DeadlockedDatabase.Controllers
         [HttpGet, Route("getPlayerLeaderboardIndex")]
         public async Task<dynamic> getPlayerLeaderboardIndex(int AccountId, int StatId)
         {
-            List<AccountStat> stats = db.AccountStat.Where(s => s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.AccountId).ToList();
+            List<AccountStat> stats = db.AccountStat.Where(s => s.Account.IsActive == true && s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.AccountId).ToList();
             AccountStat statForAccount = stats.Where(s => s.AccountId == AccountId).FirstOrDefault();
             Account acc = db.Account.Where(a => a.AccountId == AccountId).FirstOrDefault();
             AccountController ac = new AccountController(db, authService);
@@ -77,7 +77,7 @@ namespace DeadlockedDatabase.Controllers
         [HttpGet, Route("getClanLeaderboardIndex")]
         public async Task<dynamic> getClanLeaderboardIndex(int ClanId, int StatId)
         {
-            List<ClanStat> stats = db.ClanStat.Where(s => s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.ClanId).ToList();
+            List<ClanStat> stats = db.ClanStat.Where(s => s.Clan.IsActive == true && s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.ClanId).ToList();
             ClanStat statForClan = stats.Where(s => s.ClanId == ClanId).FirstOrDefault();
             Clan clan = db.Clan.Where(a => a.ClanId == ClanId).FirstOrDefault();
             ClanController cc = new ClanController(db, authService);
