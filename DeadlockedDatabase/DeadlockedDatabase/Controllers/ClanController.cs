@@ -37,20 +37,24 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpGet, Route("getClan")]
-        public async Task<ClanDTO> getClan(int clanId)
+        public async Task<dynamic> getClan(int clanId)
         {
             AccountService aServ = new AccountService();
             ClanService cs = new ClanService();
 
             Clan clan = (from c in db.Clan
                            .Include(c => c.ClanMember)
+                           .ThenInclude(cm => cm.Account)
                            .Include(c => c.ClanMessage)
                            .Include(c => c.ClanStat)
                            .Include(c => c.ClanLeaderAccount)
                            .Include(c => c.ClanInvitation)
                            .ThenInclude(ci => ci.Account)
-                         where c.ClanId == clanId
+                         where c.ClanId == clanId && c.IsActive == true
                          select c).FirstOrDefault();
+
+            if (clan == null)
+                return NotFound();
 
             ClanDTO response = new ClanDTO()
             {
@@ -58,9 +62,9 @@ namespace DeadlockedDatabase.Controllers
                 ClanId = clan.ClanId,
                 ClanName = clan.ClanName,
                 ClanLeaderAccount = aServ.toAccountDTO(clan.ClanLeaderAccount),
-                ClanMemberAccounts = clan.ClanMember.Select(cm => aServ.toAccountDTO(cm.Account)).ToList(),
+                ClanMemberAccounts = clan.ClanMember.Where(cm => cm.IsActive == true).Select(cm => aServ.toAccountDTO(cm.Account)).ToList(),
                 ClanMediusStats = clan.MediusStats,
-                ClanWideStats = clan.ClanStat.OrderBy(stat => stat.Id).Select(cs => cs.StatValue).ToList(),
+                ClanWideStats = clan.ClanStat.OrderBy(stat => stat.StatId).Select(cs => cs.StatValue).ToList(),
                 ClanMessages = clan.ClanMessage.OrderByDescending(cm => cm.Id).Select(cm => cs.toClanMessageDTO(cm)).ToList(),
                 ClanMemberInvitations = clan.ClanInvitation.Select(ci => cs.toClanInvitationDTO(ci)).ToList(),
             };
@@ -90,6 +94,12 @@ namespace DeadlockedDatabase.Controllers
             var member = db.ClanMember.Where(c => c.IsActive == true && c.AccountId == accountId && c.Clan.AppId == appId)
                 .FirstOrDefault();
             if (member != null)
+                return BadRequest();
+
+            // verify clan name doesn't already exist
+            var existingClan = db.Clan.Where(c => c.IsActive == true && c.ClanName.ToLower() == clanName.ToLower())
+                .FirstOrDefault();
+            if (existingClan != null)
                 return BadRequest();
 
             Clan newClan = new Clan()
@@ -160,8 +170,8 @@ namespace DeadlockedDatabase.Controllers
         }
 
         [Authorize("database")]
-        [HttpGet, Route("leaveClan")]
-        public async Task<dynamic> leaveClan(int accountId, int clanId)
+        [HttpPost, Route("leaveClan")]
+        public async Task<dynamic> leaveClan(int fromAccountId, int accountId, int clanId)
         {
             DateTime now = DateTime.UtcNow;
             ClanMember target = db.ClanMember.Where(cm => cm.AccountId == accountId && cm.ClanId == clanId && cm.IsActive == true).FirstOrDefault();

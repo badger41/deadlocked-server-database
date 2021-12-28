@@ -113,7 +113,7 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpGet, Route("getAnnouncements")]
-        public async Task<dynamic> getAnnouncements(int? accouncementId, DateTime? fromDt, DateTime? toDt)
+        public async Task<dynamic> getAnnouncements(int? accouncementId, int? appId, DateTime? fromDt, DateTime? toDt)
         {
             dynamic announcement = null;
             DateTime now = DateTime.UtcNow;
@@ -123,7 +123,7 @@ namespace DeadlockedDatabase.Controllers
                         where a.Id == accouncementId
                         select a).FirstOrDefault();
             }
-            else if (fromDt != null && toDt != null)
+            else if (fromDt != null && toDt != null && appId != null)
             {
                 announcement = (from a in db.DimAnnouncements
                                 where a.FromDt <= fromDt

@@ -243,9 +243,9 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize]
         [HttpGet, Route("searchAccountByName")]
-        public async Task<dynamic> searchAccountByName(string AccountName)
+        public async Task<dynamic> searchAccountByName(string AccountName, int AppId)
         {
-            Account existingAccount = db.Account.Where(a => a.AccountName == AccountName && a.IsActive == true).FirstOrDefault();
+            Account existingAccount = db.Account.Where(a => a.AppId == AppId && a.AccountName == AccountName && a.IsActive == true).FirstOrDefault();
             if (existingAccount == null)
                 return NotFound();
 
