@@ -113,7 +113,7 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpGet, Route("getAnnouncements")]
-        public async Task<dynamic> getAnnouncements(int? accouncementId, int? appId, DateTime? fromDt, DateTime? toDt)
+        public async Task<dynamic> getAnnouncements(int? accouncementId, int? appId, DateTime? fromDt, DateTime? toDt, int AppId)
         {
             dynamic announcement = null;
             DateTime now = DateTime.UtcNow;
@@ -126,14 +126,14 @@ namespace DeadlockedDatabase.Controllers
             else if (fromDt != null && toDt != null && appId != null)
             {
                 announcement = (from a in db.DimAnnouncements
-                                where a.FromDt <= fromDt
+                                where a.AppId == AppId && a.FromDt <= fromDt
                         && (a.ToDt == null || a.ToDt >= toDt)
                         select a).FirstOrDefault();
             }
             else if (fromDt != null && toDt == null)
             {
                 announcement = (from a in db.DimAnnouncements
-                                where a.FromDt <= fromDt
+                                where a.AppId == AppId && a.FromDt <= fromDt
                         && (a.ToDt == null ||a.ToDt >= now)
                         select a).FirstOrDefault();
             }
@@ -147,7 +147,7 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize("database")]
         [HttpGet, Route("getAnnouncementsList")]
-        public async Task<dynamic> getAnnouncementsList(DateTime? Dt, int TakeSize = 10)
+        public async Task<dynamic> getAnnouncementsList(DateTime? Dt, int TakeSize = 10, int AppId)
         {
             dynamic announcements = null;
             if (Dt == null)
@@ -155,7 +155,7 @@ namespace DeadlockedDatabase.Controllers
             DateTime now = DateTime.UtcNow;
             announcements = (from a in db.DimAnnouncements
                              orderby a.FromDt
-                            where a.FromDt <= Dt
+                            where a.AppId == AppId && a.FromDt <= Dt
                     && (a.ToDt == null || a.ToDt >= Dt)
                             select a).Take(TakeSize).ToList();
 
@@ -196,6 +196,7 @@ namespace DeadlockedDatabase.Controllers
             announcement.ModifiedDt = DateTime.UtcNow;
             announcement.FromDt = request.FromDt ?? announcement.FromDt;
             announcement.ToDt = request.ToDt ?? announcement.ToDt;
+            announcement.AppId = request.AppId;
 
             db.SaveChanges();
 
@@ -213,6 +214,7 @@ namespace DeadlockedDatabase.Controllers
                 FromDt = request.FromDt ?? DateTime.UtcNow,
                 ToDt = request.ToDt,
                 CreateDt = DateTime.UtcNow,
+                AppId = request.AppId,
             };
 
             db.DimAnnouncements.Add(announcement);

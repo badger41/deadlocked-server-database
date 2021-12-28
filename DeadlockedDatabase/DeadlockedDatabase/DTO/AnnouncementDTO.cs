@@ -11,6 +11,7 @@ namespace DeadlockedDatabase.DTO
         public string AnnouncementBody { get; set; }
         public DateTime? FromDt { get; set; }
         public DateTime? ToDt { get; set; }
+        public int AppId { get; set; }
     }
 
     public class ChangeAnnouncementDTO
@@ -20,5 +21,6 @@ namespace DeadlockedDatabase.DTO
         public string AnnouncementBody { get; set; }
         public DateTime? FromDt { get; set; }
         public DateTime? ToDt { get; set; }
+        public int AppId { get; set; }
     }
 }

@@ -12,5 +12,6 @@ namespace DeadlockedDatabase.Entities
         public DateTime? ModifiedDt { get; set; }
         public DateTime FromDt { get; set; }
         public DateTime? ToDt { get; set; }
+        public int? AppId { get; set; }
     }
 }

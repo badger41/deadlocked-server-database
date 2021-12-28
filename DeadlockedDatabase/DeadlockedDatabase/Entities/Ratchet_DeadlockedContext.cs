@@ -439,6 +439,8 @@ namespace DeadlockedDatabase.Entities
                 entity.Property(e => e.ModifiedDt).HasColumnName("modified_dt");
 
                 entity.Property(e => e.ToDt).HasColumnName("to_dt");
+
+                entity.Property(e => e.AppId).HasColumnName("app_id");
             });
 
             modelBuilder.Entity<DimEula>(entity =>
