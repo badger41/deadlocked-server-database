@@ -100,9 +100,9 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize]
         [HttpGet, Route("getLeaderboard")]
-        public async Task<List<LeaderboardDTO>> getLeaderboard(int StatId, int StartIndex, int Size)
+        public async Task<List<LeaderboardDTO>> getLeaderboard(int StatId, int StartIndex, int Size, int AppId)
         {
-            List<AccountStat> stats = db.AccountStat.Where(s => s.Account.IsActive == true && s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.AccountId).Skip(StartIndex).Take(Size).ToList();
+            List<AccountStat> stats = db.AccountStat.Where(s => s.Account.IsActive == true && s.StatId == StatId && s.Account.AppId == AppId).OrderByDescending(s => s.StatValue).ThenBy(s => s.AccountId).Skip(StartIndex).Take(Size).ToList();
             AccountController ac = new AccountController(db, authService);
 
             List<LeaderboardDTO> board = (from s in stats
@@ -125,9 +125,9 @@ namespace DeadlockedDatabase.Controllers
 
         [Authorize]
         [HttpGet, Route("getClanLeaderboard")]
-        public async Task<List<ClanLeaderboardDTO>> getClanLeaderboard(int StatId, int StartIndex, int Size)
+        public async Task<List<ClanLeaderboardDTO>> getClanLeaderboard(int StatId, int StartIndex, int Size, int AppId)
         {
-            List<ClanStat> stats = db.ClanStat.Where(s => s.Clan.IsActive == true && s.StatId == StatId).OrderByDescending(s => s.StatValue).ThenBy(s => s.ClanId).Skip(StartIndex).Take(Size).ToList();
+            List<ClanStat> stats = db.ClanStat.Where(s => s.Clan.IsActive == true && s.StatId == StatId && s.Clan.AppId == AppId).OrderByDescending(s => s.StatValue).ThenBy(s => s.ClanId).Skip(StartIndex).Take(Size).ToList();
 
             List<ClanLeaderboardDTO> board = (from s in stats
                                           join c in db.Clan
