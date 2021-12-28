@@ -126,12 +126,18 @@ namespace DeadlockedDatabase
             });
 
             services.AddControllers().AddNewtonsoftJson(options =>
-                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            {
+                options.UseMemberCasing();
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+            }
             );
 
             services.AddMvc(setupAction =>
             {
                 setupAction.EnableEndpointRouting = false;
+            }).AddJsonOptions(jsonOptions =>
+            {
+                jsonOptions.JsonSerializerOptions.PropertyNamingPolicy = null;
             });
             // If using Kestrel:
             services.Configure<KestrelServerOptions>(options =>
